@@ -1,0 +1,135 @@
+'use client';
+
+import { MenuIcon, PlaySquare } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import Logo from '../../public/logo.jpg'; // Check path
+
+const Navbar: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setMobileMenuOpen(false) // Mobile: Auto close
+      } else {
+        setMobileMenuOpen(true) // Desktop: Auto open
+      }
+    }
+
+    // Set initial state on mount
+    handleResize()
+
+    // Add event listener
+    window.addEventListener('resize', handleResize)
+
+    // Cleanup listener on unmount
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isActiveExact = (path: string) => pathname === path
+
+  return (
+    <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 cursor-pointer">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center  justify-center shadow-primary-200 shadow-lg overflow-hidden">
+              <Image
+                src={Logo.src}
+                className="rounded-full shadow-2xl"
+                alt="Logo"
+                loading='lazy'
+                width={40}
+                height={40}
+              />
+            </div>
+            <div>
+              <h1 className="text-sm md:text-xl font-bold text-slate-900 tracking-tight">
+                Fa De Manufacture Co., LTD.
+              </h1>
+              <p className="text-[8px] md:text-[10px] text-slate-500 font-medium uppercase">
+                ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ
+              </p>
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-8">
+            {/* Home Link */}
+            <Link
+              href="/"
+              className={`text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
+                }`}
+            >
+              Home
+            </Link>
+
+            <Link
+              href="/products"
+              className={`text-sm font-medium transition-colors hover:text-primary-600  py-2 px-2 rounded-xl ${isActiveExact('/products') || isActiveExact('/shop')
+                ? 'text-primary-600 '
+                : 'text-slate-600'
+                }`}
+            >
+              Product
+            </Link>
+
+            {/* Video Guide Link */}
+            <Link
+              href="/videos"
+              className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/videos')
+                ? 'text-primary-600 '
+                : 'text-slate-600'
+                }`}
+            >
+              <PlaySquare size={16} /> Video Guide
+            </Link>
+          </div>
+
+          <button
+            className="md:hidden p-2 text-slate-600"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <MenuIcon className='size-6' />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-100 bg-white">
+          <div className="px-4 py-4 space-y-2">
+            <Link
+              href="/products"
+              className={`text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/products')
+                ? 'text-primary-600 '
+                : 'text-slate-600'
+                }`}
+            >
+              Product
+            </Link>
+
+            <div className="border-t border-slate-100 my-2"></div>
+            <Link
+              href="/videos"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`w-full text-sm text-left py-2 rounded-lg flex items-center gap-2 ${isActiveExact('/videos')
+                ? 'text-primary-600 '
+                : 'text-slate-600'
+                }`}
+            >
+              Video Guides
+            </Link>
+          </div>
+        </div>
+      )}
+    </nav>
+  )
+}
+
+export default Navbar

@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?
+  price       Float
+  image       String[]  @default([])
+  volume      String?
+  brand       String?
+  categoryId  Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  diameter    String?
+  height      String?
+  type        String?
+  group       String?
+  length      String?
+  category    Category  @relation(fields: [categoryId], references: [id])
+  variants    Variant[]
+
+  @@index([name, slug])
+}
+
+model Variant {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  price     Float?
+  stock     Int      @default(0)
+  sku       String?
+  image     String?
+  productId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  name      String
+  createdAt DateTime @default(now())
+}
+
+model Video {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  videoUrl    String
+  thumbnail   String?
+  date        DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  displayName String?
+  createdAt   DateTime  @default(now())
+  image       String?
+  brandId     Int?
+  brand       Brand?    @relation(fields: [brandId], references: [id])
+  products    Product[]
+}
+
+model SiteSettings {
+  id          Int      @id @default(1)
+  phone       String?
+  email       String?
+  address     String?
+  mapUrl      String?
+  facebookUrl String?
+  youtubeUrl  String?
+  updatedAt   DateTime @updatedAt
+  banners     Json?
+}
+
+model Brand {
+  id         Int        @id @default(autoincrement())
+  name       String     @unique
+  slug       String     @unique
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  categories Category[]
+}
