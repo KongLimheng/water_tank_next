@@ -1,16 +1,7 @@
-import Shop from '@/components/Shopv2';
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from '@tanstack/react-query';
+'use client'
 
-export default async function HomePage() {
-  const queryClient = new QueryClient();
+import { Hero } from '@/components/Hero'
 
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Shop />
-    </HydrationBoundary>
-  );
+export default function HomePage() {
+  return <Hero />
 }

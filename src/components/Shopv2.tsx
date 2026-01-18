@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { Hero } from './Hero';
+import React from 'react'
+import { Hero } from './Hero'
 
 const Shop: React.FC = () => {
   return (

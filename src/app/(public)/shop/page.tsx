@@ -1,5 +1,10 @@
 import ShopProducts from '@/pages/ShopProducts'
+import { Suspense } from 'react'
 
 export default function ShopProductPage() {
-  return <ShopProducts />
+  return (
+    <Suspense fallback={<div />}>
+      <ShopProducts />
+    </Suspense>
+  )
 }
