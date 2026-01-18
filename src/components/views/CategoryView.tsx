@@ -138,7 +138,6 @@ export const CategoryView: React.FC = () => {
                 <tr>
                   <th className="px-6 py-4 w-20">Image</th>
                   <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Slug</th>
                   {activeTab === 'categories' && (
                     <th className="px-6 py-4">Brand Scope</th>
                   )}
