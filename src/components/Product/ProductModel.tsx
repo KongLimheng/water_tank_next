@@ -85,11 +85,11 @@ export const ProductModal: React.FC<{
           variants:
             product.variants && product.variants.length > 0
               ? product.variants.map((v) => ({
-                name: v.name || '',
-                price: v.price || 0,
-                stock: v.stock || 0,
-                image: v.image || undefined,
-              }))
+                  name: v.name || '',
+                  price: v.price || 0,
+                  stock: v.stock || 0,
+                  image: v.image || undefined,
+                }))
               : [{ name: 'Standard', price: product.price || 0, stock: 0 }],
         })
         setPreviewUrls(product.image ?? [])
@@ -128,7 +128,7 @@ export const ProductModal: React.FC<{
     // Optional: Show a toast if files were skipped
     if (newFiles.length > availableSlots) {
       console.log(
-        `Only ${availableSlots} files were added. Maximum ${MAX_FILES} allowed.`
+        `Only ${availableSlots} files were added. Maximum ${MAX_FILES} allowed.`,
       )
     }
   }
@@ -199,7 +199,7 @@ export const ProductModal: React.FC<{
         toast.success(
           product
             ? 'Product updated successfully'
-            : 'Product created successfully'
+            : 'Product created successfully',
         )
         onClose()
       },
@@ -265,18 +265,7 @@ export const ProductModal: React.FC<{
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
-              {/* <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Brand
-                </label>
-                <select
-                  {...register('brand')}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white"
-                >
-                  <option value="Grown">Grown</option>
-                  <option value="Diamond">Diamond</option>
-                </select>
-              </div> */}
+
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Category
@@ -348,8 +337,8 @@ export const ProductModal: React.FC<{
                 )}
               </div>
               <div
-                className={`grid md:grid-cols-${watchedType === 'horizontal' ? '3' : '2'
-                  } grid-cols-1 col-span-2 gap-2`}
+                className={`grid ${watchedType === 'horizontal' ? 'md:grid-cols-3' : 'md:grid-cols-2'} 
+                   grid-cols-1 col-span-2 gap-2`}
               >
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
