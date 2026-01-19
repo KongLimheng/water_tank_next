@@ -5,27 +5,27 @@ import { api } from './apiInstance'
 
 export const getProducts = cache(async (): Promise<ProductList[]> => {
   const { data } = await api.get<ProductList[]>('/products')
-  return data
+  return data || []
 })
 
 export const getProductsByBrandCategory = async (
-  category: string
+  category: string,
 ): Promise<ProductList[]> => {
   const { data } = await api.get<ProductList[]>(
-    `/product/category?id=${category}`
+    `/product/category?id=${category}`,
   )
   return data
 }
 
 export const createProduct = async (
-  productData: FormData | Omit<Product, 'id'>
+  productData: FormData | Omit<Product, 'id'>,
 ): Promise<Product> => {
   const { data } = await api.post<Product>('/products', productData)
   return data
 }
 
 export const updateProduct = async (
-  productData: FormData | Product
+  productData: FormData | Product,
 ): Promise<Product> => {
   const isFormData = productData instanceof FormData
   const id = isFormData ? productData.get('id') : (productData as Product).id
