@@ -154,7 +154,7 @@ export const SettingsView = () => {
           }
           // No new file, keep existing URL
           return { name: b.name, banner_image: b.banner_image, file: null }
-        })
+        }),
       )
 
       const cleanMapUrl = extractUrl(data.mapUrl)
@@ -283,10 +283,11 @@ export const SettingsView = () => {
                 {...register('mapUrl')}
                 rows={4}
                 placeholder='<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-mono text-xs ${mapValidation.status === 'error'
-                  ? 'border-red-300 bg-red-50'
-                  : 'border-slate-200'
-                  }`}
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-mono text-xs ${
+                  mapValidation.status === 'error'
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-slate-200'
+                }`}
               />
 
               {/* Validation Messages */}
@@ -372,7 +373,7 @@ export const SettingsView = () => {
                       <div className="hidden">
                         <input
                           {...register(
-                            `banners.${index}.banner_image` as const
+                            `banners.${index}.banner_image` as const,
                           )}
                         />
                       </div>
@@ -426,7 +427,7 @@ export const SettingsView = () => {
                 No banners added yet.
               </div>
             )}
-            {fields.length < 5 && (
+            {fields.length < 10 && (
               <button
                 type="button"
                 onClick={() => append({ name: '', banner_image: '' })}
