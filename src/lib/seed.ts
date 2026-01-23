@@ -81,6 +81,14 @@ async function main() {
 
       console.log(`   └─ Category: ${catName} [${catSlug}]`)
     }
+
+    await prisma.siteSettings.upsert({
+      where: { id: 1 },
+      update: {},
+      create: {
+        email: 'abc@admin.com',
+      },
+    })
   }
 
   console.log('✅ Database seeded successfully!')
