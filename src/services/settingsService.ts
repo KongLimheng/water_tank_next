@@ -20,7 +20,6 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
 
   if (settings.banners && Array.isArray(settings.banners)) {
     const bannerMetadata: any[] = []
-    console.log(settings.banners, '==')
     settings.banners.forEach((banner: any, index: number) => {
       if (banner.file) {
         // This is a NEW upload

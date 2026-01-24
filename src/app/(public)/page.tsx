@@ -31,16 +31,15 @@ export default function HomePage() {
           Product Features
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {fetchedProducts.length &&
+          {fetchedProducts.length > 0 ? (
             fetchedProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 onClick={setSelectedProduct}
               />
-            ))}
-
-          {fetchedProducts?.length === 0 && (
+            ))
+          ) : (
             <div className="col-span-full py-20 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
               <p className="text-lg">No products found in this category.</p>
             </div>

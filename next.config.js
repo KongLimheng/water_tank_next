@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable standalone output for Docker
-  output: 'standalone',
+  // output: 'standalone',
   // Allow loading images from existing uploads folder (if served securely) or external sources
   images: {
     remotePatterns: [
@@ -15,6 +15,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Temporarily ignore to allow build during migration
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
