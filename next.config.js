@@ -3,6 +3,11 @@ const nextConfig = {
   // Enable standalone output for Docker
   // output: 'standalone',
   // Allow loading images from existing uploads folder (if served securely) or external sources
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Disable source maps in production
+  productionBrowserSourceMaps: false,
   images: {
     remotePatterns: [
       {
