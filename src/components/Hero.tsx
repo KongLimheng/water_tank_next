@@ -70,7 +70,7 @@ const ScrollRevealRow = ({
         }
            `}
     >
-      <div className="group relative w-full max-h-[700px] rounded md:rounded-xl overflow-hidden shadow-xl transition-all duration-500 hover:shadow-primary-500/20">
+      <div className="group relative w-full rounded md:rounded-xl overflow-hidden shadow-xl transition-all duration-500 hover:shadow-primary-500/20">
         {/* Image with Zoom Effect */}
         <img
           src={banner.banner_image}
