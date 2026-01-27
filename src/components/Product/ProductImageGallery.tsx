@@ -1,5 +1,4 @@
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react'
-import Image from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
 import '../../styles/image-skeleton.css'
 
@@ -97,8 +96,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   return (
     <div
       ref={galleryRef}
-      className={`relative  ${isFullScreen ? 'bg-black h-screen w-screen p-4' : ''
-        }`}
+      className={`relative  ${
+        isFullScreen ? 'bg-black h-screen w-screen p-4' : ''
+      }`}
     >
       <button
         onClick={handleFullScreenToggle}
@@ -114,13 +114,13 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             <button
               key={index}
               onClick={() => handleImageSelect(img, index)}
-              className={`border-2 rounded-xl p-1 ${selectedImage === img ? 'border-indigo-600' : 'border-gray-200'
-                }`}
+              className={`border-2 rounded-xl p-1 ${
+                selectedImage === img ? 'border-indigo-600' : 'border-gray-200'
+              }`}
             >
-              <Image src={img}
+              <img
+                src={img}
                 alt={`${name} ${index}`}
-                width={80}
-                height={80}
                 loading="lazy"
                 className="size-20 object-contain rounded-lg"
               />
@@ -153,8 +153,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             loading="lazy"
             decoding="async"
             onLoad={() => setImageLoaded(true)}
-            className={`transition-transform duration-300 md:max-h-[500px] max-h-[320px] ${isZoomed ? 'scale-150' : 'scale-100'
-              } ${imageLoaded ? 'image-loaded' : ''}`}
+            className={`transition-transform duration-300 md:max-h-[500px] max-h-[320px] ${
+              isZoomed ? 'scale-150' : 'scale-100'
+            } ${imageLoaded ? 'image-loaded' : ''}`}
             style={
               isZoomed
                 ? { transformOrigin: `${mousePosition.x}% ${mousePosition.y}%` }
