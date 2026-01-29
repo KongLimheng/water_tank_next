@@ -26,31 +26,31 @@ export default function Footer() {
           </div>
         ) : settings ? (
           <>
-            <div className="mb-8">
-              <h3 className="text-xl md:text-2xl font-bold mb-6 font-khmer">
+            <div className="mb-8 ">
+              <h3 className="text-xl md:text-2xl xl:text-4xl font-bold mb-6 font-khmer">
                 លោកអ្នកអាចទំនាក់ទំនងយើងតាមរយៈ៖
               </h3>
-              <div className="space-y-4 text-base md:text-lg">
-                <div className="flex items-start gap-2">
+              <div className="space-y-4 ">
+                <div className="text-sm md:text-lg xl:text-2xl flex items-start gap-2">
                   <span className="font-bold text-black min-w-[120px]">
                     ទូរស័ព្ទលេខ:
                   </span>
                   <span className="tracking-wide">{settings.phone}</span>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className="text-sm md:text-lg xl:text-2xl flex items-start gap-2">
                   <span className="font-bold min-w-[120px]">
                     សារអេឡិចត្រូនិច:
                   </span>
                   <a
                     href={`mailto:${settings.email}`}
-                    className="text-blue-500 hover:text-blue-400 underline decoration-blue-500/50"
+                    className=" md:text-base text-blue-500 hover:text-blue-400 underline decoration-blue-500/50"
                   >
                     {settings.email}
                   </a>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className="text-sm md:text-lg xl:text-2xl flex items-start gap-2">
                   <span className="font-bold min-w-[120px]">អាស័យដ្ឋាន:</span>
-                  <span>{settings.address}</span>
+                  <span className='' >{settings.address}</span>
                 </div>
               </div>
             </div>

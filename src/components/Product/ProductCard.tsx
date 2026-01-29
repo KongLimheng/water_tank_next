@@ -15,7 +15,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
       onClick={() => onClick(product)}
       onMouseLeave={() => setDisplayImage(product.image)} // Reset on mouse leave
     >
-      <div className="relative h-64 overflow-hidden bg-slate-50 flex items-center justify-center">
+      <div className="relative h-64 xl:h-96 overflow-hidden bg-slate-50 flex items-center justify-center">
         <img
           src={displayImage[0] || generatePlaceholderImage(product.name)}
           alt={product.name}
@@ -29,9 +29,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
       </div>
 
       <div className="p-5 flex-1 flex flex-col">
-        <div className="flex justify-between items-start mb-2">
+        <div className="flex justify-between items-start mb-2 gap-2">
           <div>
-            <h3 className="text-lg font-bold text-slate-800 leading-tight mb-1 group-hover:text-primary-600 transition-colors">
+            <h3 className="text-lg font-bold text-slate-800 mb-1 group-hover:text-primary-600 transition-colors">
               {product.name}
             </h3>
             {product.volume && (
@@ -40,25 +40,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
               </span>
             )}
           </div>
-          <p className="text-lg font-bold text-primary-600">
-            ${product.price.toFixed(2)}
-          </p>
+
+          {product.price === 0 ? (
+            <h3 className="text-lg font-bold text-primary-600">សាកសួរ</h3>
+          ) : (
+            <h3 className="text-lg font-bold text-primary-600">
+              ${product.price.toFixed(2)}
+            </h3>
+          )}
         </div>
 
-        <p className="text-slate-500 text-sm mb-6 flex-1 line-clamp-2">
-          {product.description}
-        </p>
-
-        {/* <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdd(product);
-          }}
-          className="w-full py-3 bg-slate-50 text-slate-900 font-semibold rounded-xl flex items-center justify-center gap-2 group-hover:bg-primary-600 group-hover:text-white transition-all active:scale-95"
-        >
-          <Plus size={18} />
-          Add to Cart
-        </button> */}
+        {product.description && (
+          <p className="text-slate-500 text-sm mb-6 flex-1 line-clamp-2">
+            {product.description}
+          </p>
+        )}
       </div>
     </div>
   )

@@ -81,7 +81,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
             <PriceTable
               items={group.vertical}
               title="Vertical Tanks"
-              subtitle="立式水塔"
+              subtitle=""
               onRowClick={onProductClick}
               isHorizontal={false}
             />
@@ -213,7 +213,7 @@ const PriceTable = ({
       </div>
 
       {/* Table Body */}
-      <div className="bg-white divide-y divide-slate-400 flex-1">
+      <div className="bg-white divide-y flex-1">
         {items.map((product, idx) => (
           <div
             key={product.id}
@@ -222,7 +222,8 @@ const PriceTable = ({
               grid ${isHorizontal ? 'grid-cols-5' : 'grid-cols-4'} 
               text-center items-center py-2 cursor-pointer transition-colors group
               ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
-              hover:bg-blue-50
+              hover:bg-blue-50 hover:border-blue-600 hover:border
+              
             `}
           >
             {/* 1. Capacity */}
@@ -247,10 +248,16 @@ const PriceTable = ({
               {product.height || '-'}
             </div>
 
-            {/* 5. Price */}
+         {product.price === 0 ? (
+            <div className="text-red-600 font-black text-sm px-1">
+              សាកសួរ
+            </div>
+         ): (
+          
             <div className="text-red-600 font-black text-sm lg:text-lg px-1">
               ${product.price}
             </div>
+         )}
           </div>
         ))}
       </div>

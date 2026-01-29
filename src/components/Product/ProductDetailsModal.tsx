@@ -1,4 +1,5 @@
-"use client"
+'use client'
+import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { ProductList } from '../../types'
 import ProductImageGallery from './ProductImageGallery'
 
@@ -11,8 +12,6 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   product,
   onClose,
 }) => {
-
-
   if (!product) return null
 
   // Determine display values
@@ -26,16 +25,16 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         onClick={onClose}
       />
 
-      <div className="relative bg-white rounded-2xl shadow-2xl w-75 overflow-y-auto flex flex-col animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-[90%] md:w-[75%] overflow-y-auto flex flex-col animate-in zoom-in-95 duration-200">
         {/* Product Details */}
-        <div className="max-w-7xl max-h-[90vh] mx-auto p-2 lg:p-6">
+        <div className="w-full max-h-[90vh] mx-auto p-2 lg:p-6">
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 lg:gap-12">
             {/* Product Images */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ">
               <ProductImageGallery
                 images={displayImage}
                 name={product.name}
-                defaultImage=""
+                defaultImage={generatePlaceholderImage(product.name, 200)}
               />
             </div>
 
@@ -56,9 +55,15 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
 
               <div className="">
-                <p className="sm:text-xl md:text-2xl font-bold text-primary-600 mb-2">
-                  ${displayPrice.toFixed(2)}
-                </p>
+                {displayPrice === 0 ? (
+                  <p className="sm:text-xl md:text-2xl font-bold text-primary-600 mb-2">
+                    សាកសួរ
+                  </p>
+                ) : (
+                  <p className="sm:text-xl md:text-2xl font-bold text-primary-600 mb-2">
+                    ${displayPrice.toFixed(2)}
+                  </p>
+                )}
                 <p className="text-slate-600 leading-relaxed">
                   {product.description}
                 </p>

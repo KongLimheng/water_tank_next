@@ -13,7 +13,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   name,
   defaultImage,
 }) => {
-  const [selectedImage, setSelectedImage] = useState(defaultImage || images[0])
+  const [selectedImage, setSelectedImage] = useState(images[0] || defaultImage)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isZoomed, setIsZoomed] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -82,7 +82,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
   if (images.length === 0) {
     return (
-      <div className="image-wrapper relative bg-gray-50 rounded-2xl p-6 flex items-center justify-center h-[500px]">
+      <div className="image-wrapper relative bg-gray-50 rounded-2xl p-6 flex items-center justify-center">
         <img
           src={selectedImage}
           alt={name}
@@ -145,7 +145,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           onClick={handleZoomToggle}
           style={{ cursor: isZoomed ? 'zoom-out' : 'zoom-in' }}
         >
-          {!imageLoaded && <div className="image-skeleton" />}
+          {!imageLoaded && <div className="image-skeleton z-50" />}
 
           <img
             src={selectedImage}
