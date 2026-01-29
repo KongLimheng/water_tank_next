@@ -19,7 +19,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         <img
           src={displayImage[0] || generatePlaceholderImage(product.name)}
           alt={product.name}
-          className="w-100 h-full object-fill transform group-hover:scale-110 transition-transform duration-700"
+          className="w-100 h-full object-contain transform group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <span className="bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-slate-800 shadow-sm capitalize">

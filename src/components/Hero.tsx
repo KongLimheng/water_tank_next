@@ -104,7 +104,7 @@ const BannerContent = ({
         ${isMainHero ? 'p-8' : 'p-6'}
       `}
       >
-        <h1
+        {/* <h1
           className={`
           font-bold text-white leading-tight
           ${
@@ -115,7 +115,7 @@ const BannerContent = ({
         `}
         >
           {banner.name}
-        </h1>
+        </h1> */}
       </div>
     </div>
   )
