@@ -102,6 +102,7 @@ export interface Video {
 export interface BannerItem {
   name: string
   banner_image: string
+  categoryId?: number | null
 }
 
 export interface Brand {

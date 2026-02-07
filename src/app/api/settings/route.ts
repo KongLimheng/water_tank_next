@@ -80,13 +80,15 @@ export async function PUT(req: Request) {
           finalBanners.push({
             name: item.name,
             banner_image: savedPath,
+            categoryId: item.categoryId ?? null,
           });
         }
       } else {
         // Keep existing
         finalBanners.push({
           name: item.name,
-          banner_image: item.banner_image
+          banner_image: item.banner_image,
+          categoryId: item.categoryId ?? null,
         });
       }
     }

@@ -18,9 +18,15 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
   formData.append('youtubeUrl', settings.youtubeUrl || '')
   formData.append('uploadType', 'banners')
 
-  if (settings.banners && Array.isArray(settings.banners)) {
+  const incomingBanners =
+    Array.isArray(settings.banners) && settings.banners.length > 0
+      ? settings.banners
+      : [{ name: 'Main Banner', banner_image: '', categoryId: null }]
+
+  if (Array.isArray(incomingBanners)) {
     const bannerMetadata: any[] = []
-    settings.banners.forEach((banner: any, index: number) => {
+    incomingBanners.forEach((banner: any, index: number) => {
+      const categoryId = index === 0 ? null : banner.categoryId ?? null
       if (banner.file) {
         // This is a NEW upload
         // Append the file with a specific key.
@@ -35,6 +41,7 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
         bannerMetadata.push({
           name: banner.name,
           banner_image: null, // Server will fill this
+          categoryId,
           isNewUpload: true,
           originalIndex: index, // Track order
         })
@@ -43,6 +50,7 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
         bannerMetadata.push({
           name: banner.name,
           banner_image: banner.banner_image,
+          categoryId,
           isNewUpload: false,
         })
       }

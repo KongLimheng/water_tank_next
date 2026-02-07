@@ -97,7 +97,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     <div
       ref={galleryRef}
       className={`relative  ${
-        isFullScreen ? 'bg-black h-screen w-screen p-4' : ''
+        isFullScreen
+          ? 'bg-black h-screen w-screen p-4 flex justify-center items-center'
+          : ''
       }`}
     >
       <button
@@ -118,22 +120,22 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 selectedImage === img ? 'border-indigo-600' : 'border-gray-200'
               }`}
             >
-              <img
+              {/* <img
                 src={img}
                 alt={`${name} ${index}`}
                 loading="lazy"
                 className="size-20 object-contain rounded-lg"
-              />
-              {/* <img
+              /> */}
+              <img
                 src={img}
                 alt={`${name} ${index}`}
-                className="size-20 object-cover rounded-lg"
+                className="size-20 object-contain rounded-lg"
                 loading="lazy"
                 onLoad={() => setImageLoaded(true)}
                 onError={(e) =>
                   ((e.target as HTMLImageElement).src = selectedImage)
                 }
-              /> */}
+              />
             </button>
           ))}
         </div>

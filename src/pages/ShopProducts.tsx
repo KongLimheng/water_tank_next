@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
@@ -14,7 +14,7 @@ const ShopProducts = () => {
   const activeCategory = searchParams?.get('category') || ''
 
   const [selectedProduct, setSelectedProduct] = useState<ProductList | null>(
-    null
+    null,
   )
   const { data: fetchedProducts, isLoading: isQueryLoading } = useQuery({
     queryKey: ['products', 'category', activeCategory],
@@ -48,28 +48,6 @@ const ShopProducts = () => {
             <Loader2 size={48} className="text-primary-600 animate-spin" />
           </div>
         ) : (
-          // <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          //   {visibleProducts.map((product) => (
-          //     <ProductCard
-          //       key={product.id}
-          //       product={product}
-          //       onClick={setSelectedProduct}
-          //     />
-          //   ))}
-
-          //   {visibleProducts.length === 0 && (
-          //     <div className="col-span-full py-20 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
-          //       <p className="text-lg">No products found in this category.</p>
-          //       <button
-          //         onClick={handleClearFilters}
-          //         className="mt-4 text-primary-600 font-bold hover:underline"
-          //       >
-          //         View All Products
-          //       </button>
-          //     </div>
-          //   )}
-          // </div>
-
           <PriceListView
             products={visibleProducts}
             onProductClick={setSelectedProduct}

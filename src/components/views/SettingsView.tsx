@@ -1,5 +1,6 @@
+import { getCategories } from '@/services/categoryService'
 import { getSettings, saveSettings } from '@/services/settingsService'
-import { SiteSettings } from '@/types'
+import { Category, SiteSettings } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import {
   AlertCircle,
@@ -23,6 +24,7 @@ import { toast } from 'react-toastify'
 interface BannerItem {
   name: string
   banner_image: string
+  categoryId?: number | null
   file?: File // Optional: used for new uploads before they become URLs
 }
 
@@ -52,13 +54,21 @@ export const SettingsView = () => {
       email: '',
       address: '',
       mapUrl: '',
-      banners: [{ name: 'Banner1' }],
+      banners: [{ name: 'Main Banner', banner_image: '', categoryId: null }],
     },
   })
 
-  const { data: settings, isLoading: isSettingsLoading } = useQuery({
+  const { data: settings } = useQuery({
     queryKey: ['site-settings'],
     queryFn: getSettings,
+    staleTime: 1000 * 60 * 60,
+  })
+
+  const { data: categories = [], isLoading: isCategoriesLoading } = useQuery<
+    Category[]
+  >({
+    queryKey: ['categories'],
+    queryFn: getCategories,
     staleTime: 1000 * 60 * 60,
   })
 
@@ -68,6 +78,12 @@ export const SettingsView = () => {
     name: 'banners',
   })
 
+  const normalizeCategoryId = (value: unknown): number | null => {
+    if (value === null || value === undefined || value === '') return null
+    const parsed = Number(value)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+
   // Watch map URL for live preview and validation
   const watchedMapUrl = watch('mapUrl')
 
@@ -75,9 +91,18 @@ export const SettingsView = () => {
   useEffect(() => {
     const data = settings
     if (data) {
-      const loadedBanners = (data.banners as unknown as BannerItem[]) || [
-        { name: 'Banner1' },
-      ]
+      const rawBanners = (data.banners as unknown as BannerItem[]) || []
+
+      const normalizedBanners = rawBanners.map((banner, index) => ({
+        name: banner.name || '',
+        banner_image: banner.banner_image || '',
+        categoryId: index === 0 ? null : normalizeCategoryId(banner.categoryId),
+      }))
+
+      const loadedBanners =
+        normalizedBanners.length > 0
+          ? normalizedBanners
+          : [{ name: 'Main Banner', banner_image: '', categoryId: null }]
 
       reset({
         phone: data.phone || '',
@@ -143,17 +168,29 @@ export const SettingsView = () => {
     setIsLoading(true)
     try {
       const processedBanners = await Promise.all(
-        data.banners.map(async (b: any) => {
+        data.banners.map(async (b: any, index: number) => {
+          const categoryId =
+            index === 0 ? null : normalizeCategoryId(b.categoryId)
           if (b.file) {
             // const uploadResult = await uploadService.upload(b.file)
             // return { name: b.name, banner_image: uploadResult.url }
 
             // For now, we just keep the local preview or the file name to simulate
             console.log(`Uploading file for ${b.name}...`)
-            return { name: b.name, banner_image: b.banner_image, file: b.file } // In real app, replace this with server URL
+            return {
+              name: b.name,
+              banner_image: b.banner_image,
+              categoryId,
+              file: b.file,
+            } // In real app, replace this with server URL
           }
           // No new file, keep existing URL
-          return { name: b.name, banner_image: b.banner_image, file: null }
+          return {
+            name: b.name,
+            banner_image: b.banner_image,
+            categoryId,
+            file: null,
+          }
         }),
       )
 
@@ -352,21 +389,68 @@ export const SettingsView = () => {
                 >
                   <div className="flex-col flex flex-1 gap-2">
                     {/* Inputs */}
-                    <div className=" w-full space-y-3">
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                          Banner Name
-                        </label>
-                        <input
-                          {...register(`banners.${index}.name` as const)}
-                          placeholder="e.g. Summer Sale"
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
-                        />
-                        {errors.banners?.[index]?.name && (
-                          <span className="text-red-500 text-xs">
-                            {errors.banners[index]?.name?.message}
+                    <div className="w-full space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* {index === 0 && (
+                          <span className="text-[9px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">
+                            Default
                           </span>
-                        )}
+                        )} */}
+                        {/* <div>
+                          <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-2">
+                            {index === 0 ? 'Main Banner' : 'Banner Name'}
+                           
+                          </label>
+                          <input
+                            {...register(`banners.${index}.name` as const)}
+                            placeholder={
+                              index === 0 ? 'Main Banner' : 'e.g. Summer Sale'
+                            }
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+                          />
+                          {errors.banners?.[index]?.name && (
+                            <span className="text-red-500 text-xs">
+                              {errors.banners[index]?.name?.message}
+                            </span>
+                          )}
+                        </div> */}
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                            Category
+                          </label>
+                          <select
+                            {...register(
+                              `banners.${index}.categoryId` as const,
+                              {
+                                setValueAs: (value) =>
+                                  value === '' ? null : Number(value),
+                              },
+                            )}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                            disabled={isCategoriesLoading || index === 0}
+                          >
+                            <option value="">
+                              {index === 0
+                                ? 'Main banner (no category)'
+                                : isCategoriesLoading
+                                  ? 'Loading categories...'
+                                  : 'Select Category'}
+                            </option>
+                            {categories.map((category) => (
+                              <option key={category.id} value={category.id}>
+                                {category.displayName || category.name}
+                                {category.brand
+                                  ? ` (${category.brand.name})`
+                                  : ''}
+                              </option>
+                            ))}
+                          </select>
+                          {!isCategoriesLoading && categories.length === 0 && (
+                            <span className="text-slate-400 text-xs">
+                              No categories found.
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Hidden input to store the URL text (if manually editing or verifying) */}
@@ -410,14 +494,24 @@ export const SettingsView = () => {
                   </div>
 
                   {/* Actions */}
-                  <button
-                    type="button"
-                    onClick={() => remove(index)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition self-start md:self-center"
-                    title="Remove Banner"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => remove(index)}
+                      className={`p-2 rounded-lg transition self-start md:self-center ${
+                        fields.length === 1
+                          ? 'text-slate-300 cursor-not-allowed'
+                          : 'text-slate-400 hover:text-red-500 hover:bg-red-50'
+                      }`}
+                      title={
+                        fields.length === 1
+                          ? 'At least one banner is required'
+                          : 'Remove Banner'
+                      }
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -427,10 +521,13 @@ export const SettingsView = () => {
                 No banners added yet.
               </div>
             )}
+
             {fields.length < 10 && (
               <button
                 type="button"
-                onClick={() => append({ name: '', banner_image: '' })}
+                onClick={() =>
+                  append({ name: '', banner_image: '', categoryId: null })
+                }
                 className=" text-xs font-bold text-primary-600 flex items-center gap-1 hover:underline justify-self-end"
               >
                 <Plus size={14} /> Add Banner

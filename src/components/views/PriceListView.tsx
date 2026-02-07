@@ -13,6 +13,13 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
 }) => {
   // 1. Grouping Logic
   const groupedData = useMemo(() => {
+    // helper: extract numeric volume safely
+    const getVolumeNumber = (volume?: string) => {
+      if (!volume) return 0
+      const match = volume.match(/\d+/)
+      return match ? parseInt(match[0], 10) : 0
+    }
+
     // Structure to hold our specific groups
     const groups: Record<
       string,
@@ -45,8 +52,24 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
 
     // 4. Sort by Price
     Object.values(groups).forEach((group) => {
-      group.vertical.sort((a, b) => a.price - b.price)
-      group.horizontal.sort((a, b) => a.price - b.price)
+      group.vertical.sort((a, b) => {
+        const volA = getVolumeNumber(a.volume!)
+        const volB = getVolumeNumber(b.volume!)
+
+        if (volA !== volB) return volA - volB
+
+        // tie-breaker: keep consistent order for same volume
+        return (a.volume ?? '').localeCompare(b.volume ?? '', 'km')
+      })
+
+      group.horizontal.sort((a, b) => {
+        const volA = getVolumeNumber(a.volume!)
+        const volB = getVolumeNumber(b.volume!)
+
+        if (volA !== volB) return volA - volB
+
+        return (a.volume ?? '').localeCompare(b.volume ?? '', 'km')
+      })
     })
 
     return groups
@@ -106,7 +129,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
             <PriceTable
               items={group.horizontal}
               title="Horizontal Tanks"
-              subtitle="卧式水塔"
+              subtitle=""
               onRowClick={onProductClick}
               isHorizontal={true}
             />
@@ -166,6 +189,25 @@ const PriceTable = ({
   onRowClick: (p: ProductList) => void
   isHorizontal: boolean
 }) => {
+  // Calculate the maximum number of variants to determine grid layout
+  const maxVariants = useMemo(
+    () => Math.max(...items.map((item) => item.variants.length), 1),
+    [items],
+  )
+
+  // Calculate base columns (capacity, diameter, height, and length for horizontal)
+  const baseColCount = isHorizontal ? 4 : 3
+  const totalCols = baseColCount + maxVariants
+
+  // Grid style for dynamic column count
+  const gridStyle = useMemo(
+    () => ({
+      display: 'grid',
+      gridTemplateColumns: `repeat(${totalCols}, minmax(0, 1fr))`,
+    }),
+    [totalCols],
+  )
+
   // If list is empty, render a placeholder to keep layout balanced?
   // Or return null? The image shows empty space if missing, but let's return null for cleaner UI.
   if (items.length === 0) {
@@ -180,9 +222,8 @@ const PriceTable = ({
     <div className="border border-slate-400 h-full flex flex-col relative">
       {/* Table Header */}
       <div
-        className={`grid ${
-          isHorizontal ? 'grid-cols-5' : 'grid-cols-4'
-        } text-center font-bold border-b-2 border-slate-400 bg-slate-50`}
+        className="text-center font-bold border-b-2 border-slate-400 bg-slate-50"
+        style={gridStyle}
       >
         {/* Col 1: Capacity */}
         <div className="py-2 px-1 border-r border-slate-300">
@@ -201,15 +242,27 @@ const PriceTable = ({
           </div>
         )}
 
-        {/* Col 4: Height */}
+        {/* Col 4/3: Height */}
         <div className="py-2 px-1 border-r border-slate-300">
           <div className="text-blue-900 text-sm lg:text-base">កំពស់</div>
         </div>
 
-        {/* Col 5: Price */}
-        <div className="py-2 px-1">
-          <div className="text-blue-900 text-sm lg:text-base">តម្លៃលក់</div>
-        </div>
+        {maxVariants > 1 ? (
+          ['5ឆ្នាំ (ខៀវ)', '15ឆ្នាំ (ម៉ាប)'].map((v, idx) => (
+            <div
+              key={`header-price-${idx}`}
+              className={`py-2 px-1 ${
+                idx < maxVariants - 1 ? 'border-r border-slate-300' : ''
+              }`}
+            >
+              <div className="text-blue-900 text-sm lg:text-base">{v}</div>
+            </div>
+          ))
+        ) : (
+          <div className="py-2 px-1">
+            <div className="text-blue-900 text-sm lg:text-base">តម្លៃលក់</div>
+          </div>
+        )}
       </div>
 
       {/* Table Body */}
@@ -218,16 +271,14 @@ const PriceTable = ({
           <div
             key={product.id}
             onClick={() => onRowClick(product)}
-            className={`
-              grid ${isHorizontal ? 'grid-cols-5' : 'grid-cols-4'} 
-              text-center items-center py-2 cursor-pointer transition-colors group
-              ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
-              hover:bg-blue-50 hover:border-blue-600 hover:border
-              
-            `}
+            className="text-center items-center py-2 cursor-pointer transition-colors group hover:bg-blue-50 hover:border-blue-600 hover:border"
+            style={{
+              ...gridStyle,
+              backgroundColor: idx % 2 === 0 ? 'white' : '#f1f5f9',
+            }}
           >
             {/* 1. Capacity */}
-            <div className="text-red-600 font-black text-sm lg:text-lg border-r border-transparent px-1">
+            <div className="text-red-600 font-black text-sm lg:text-base border-r border-transparent px-1">
               {product.volume || product.name}
             </div>
 
@@ -248,16 +299,43 @@ const PriceTable = ({
               {product.height || '-'}
             </div>
 
-         {product.price === 0 ? (
-            <div className="text-red-600 font-black text-sm px-1">
-              សាកសួរ
-            </div>
-         ): (
-          
-            <div className="text-red-600 font-black text-sm lg:text-lg px-1">
-              ${product.price}
-            </div>
-         )}
+            {/* Price columns - one for each variant slot */}
+            {Array.from({ length: maxVariants }).map((_, variantIdx) => {
+              const variant = product.variants[variantIdx]
+
+              if (!variant) {
+                // Empty slot if product has fewer variants than max
+                return (
+                  <div
+                    key={`empty-price-${variantIdx}`}
+                    className="text-red-600 font-black text-sm px-1"
+                  >
+                    សាកសួរ
+                  </div>
+                )
+              }
+
+              // Show price for variant
+              if (variant.price) {
+                return (
+                  <div
+                    key={variant.id}
+                    className="text-red-600 font-bold text-sm lg:text-base border-r border-transparent px-1"
+                  >
+                    ${variant.price}
+                  </div>
+                )
+              }
+
+              return (
+                <div
+                  key={variant.id}
+                  className="text-red-600 font-black text-sm px-1"
+                >
+                  សាកសួរ
+                </div>
+              )
+            })}
           </div>
         ))}
       </div>

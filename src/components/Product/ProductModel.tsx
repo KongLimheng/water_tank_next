@@ -1,6 +1,6 @@
 import { useProductMutations } from '@/hooks/useProductMutations'
 import { Category, ProductList } from '@/types'
-import { Plus, Save, X } from 'lucide-react'
+import { Plus, Save, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
@@ -53,11 +53,11 @@ export const ProductModal: React.FC<{
   } = useForm<ProductFormValues>({
     defaultValues: {
       brand: 'Grown',
-      variants: [{ name: 'Standard', price: 0, stock: 1 }],
+      variants: [{ name: 'Default', price: 0, stock: 1 }],
     },
   })
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: 'variants',
   })
@@ -90,7 +90,7 @@ export const ProductModal: React.FC<{
                   stock: v.stock || 0,
                   image: v.image || undefined,
                 }))
-              : [{ name: 'Standard', price: product.price || 0, stock: 0 }],
+              : [{ name: 'Default', price: product.price || 0, stock: 0 }],
         })
         setPreviewUrls(product.image ?? [])
       } else {
@@ -424,10 +424,12 @@ export const ProductModal: React.FC<{
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider"></h4>
-              {fields.length === 0 && (
+              {fields.length < 2 && (
                 <button
                   type="button"
-                  onClick={() => append({ name: '', price: 0, stock: 0 })}
+                  onClick={() =>
+                    append({ name: 'Default', price: 0, stock: 0 })
+                  }
                   className="text-xs font-bold text-primary-600 flex items-center gap-1 hover:underline"
                 >
                   <Plus size={14} /> Add Variant
@@ -440,7 +442,7 @@ export const ProductModal: React.FC<{
                   key={field.id}
                   className="flex gap-2 items-start p-3 bg-slate-50 rounded-xl border border-slate-200"
                 >
-                  <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="flex-1 grid grid-cols-2 gap-2">
                     <div className="col-span-2 sm:col-span-1">
                       <label className="text-[10px] font-bold text-slate-400 uppercase">
                         Name
@@ -469,6 +471,20 @@ export const ProductModal: React.FC<{
                       />
                     </div>
                   </div>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => remove(index)}
+                      className={`p-2 rounded-lg transition self-start md:self-center ${
+                        fields.length === 1
+                          ? 'text-slate-300 cursor-not-allowed'
+                          : 'text-slate-400 hover:text-red-500 hover:bg-red-50'
+                      }`}
+                      title={'Remove Variant'}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

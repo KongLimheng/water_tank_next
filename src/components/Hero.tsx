@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import { getSettings } from '../services/settingsService'
 import { BannerItem } from '../types'
@@ -69,6 +70,10 @@ const BannerContent = ({
   banner: BannerItem
   isMainHero: boolean
 }) => {
+  const router = useRouter()
+  const isClickable =
+    banner.categoryId !== null && !isNaN(Number(banner.categoryId))
+
   return (
     <div
       className={`
@@ -79,7 +84,11 @@ const BannerContent = ({
           ? 'md:rounded-2xl rounded-lg'
           : 'aspect-square rounded md:rounded-md'
       }
+      ${isClickable ? 'cursor-pointer' : 'cursor-default'}
     `}
+      onClick={() =>
+        isClickable && router.push(`/shop?category=${banner.categoryId}`)
+      }
     >
       <img
         src={banner.banner_image}
@@ -103,20 +112,7 @@ const BannerContent = ({
         absolute bottom-0 left-0 w-full
         ${isMainHero ? 'p-8' : 'p-6'}
       `}
-      >
-        {/* <h1
-          className={`
-          font-bold text-white leading-tight
-          ${
-            isMainHero
-              ? 'text-3xl md:text-5xl xl:text-6xl'
-              : 'text-xl md:text-2xl'
-          }
-        `}
-        >
-          {banner.name}
-        </h1> */}
-      </div>
+      ></div>
     </div>
   )
 }

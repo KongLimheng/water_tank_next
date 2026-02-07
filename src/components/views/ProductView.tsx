@@ -81,7 +81,16 @@ export const ProductView = ({ products }: ProductViewProp) => {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <Image src={product.image[0] || generatePlaceholderImage(product.name)} alt={product.name} width={50} height={50} className="w-12 h-12 rounded-lg object-contain bg-slate-100" />
+                        <Image
+                          src={
+                            product.image[0] ||
+                            generatePlaceholderImage(product.name)
+                          }
+                          alt={product.name}
+                          width={50}
+                          height={50}
+                          className="size-12 rounded-lg object-contain bg-slate-100"
+                        />
                         {/* <img
                           src={
                             product.image[0] ||
@@ -90,7 +99,7 @@ export const ProductView = ({ products }: ProductViewProp) => {
                           loading="eager"
                           decoding="async"
                           onLoad={() => setImageLoaded(true)}
-                          className="w-12 h-12 rounded-lg object-cover bg-slate-100"
+                          className="size-12 rounded-lg object-contain bg-slate-100"
                           alt={product.slug}
                         /> */}
                         <div>
