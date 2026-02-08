@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import '../../styles/image-skeleton.css'
 
@@ -16,9 +16,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   const [selectedImage, setSelectedImage] = useState(images[0] || defaultImage)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isZoomed, setIsZoomed] = useState(false)
-  const [isFullScreen, setIsFullScreen] = useState(false)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const galleryRef = useRef<HTMLDivElement>(null)
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
@@ -28,14 +28,24 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   }, [selectedImage, images])
 
   useEffect(() => {
-    const handleFullScreenChange = () => {
-      setIsFullScreen(!!document.fullscreenElement)
+    if (!isPreviewOpen) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsPreviewOpen(false)
+        setIsZoomed(false)
+      }
     }
 
-    document.addEventListener('fullscreenchange', handleFullScreenChange)
-    return () =>
-      document.removeEventListener('fullscreenchange', handleFullScreenChange)
-  }, [])
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isPreviewOpen])
 
   const handleImageSelect = (img: string, index: number) => {
     setSelectedImage(img)
@@ -57,16 +67,25 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     setIsZoomed(false)
   }
 
-  const handleZoomToggle = () => setIsZoomed(!isZoomed)
+  const handleMainImageClick = () => {
+    if (clickTimeoutRef.current) return
+    clickTimeoutRef.current = setTimeout(() => {
+      setIsPreviewOpen(true)
+      setIsZoomed(false)
+      clickTimeoutRef.current = null
+    }, 200)
+  }
 
-  const handleFullScreenToggle = async () => {
-    if (!galleryRef.current) return
-
-    if (!isFullScreen) {
-      await galleryRef.current.requestFullscreen()
-    } else {
-      await document.exitFullscreen()
+  const handleMainImageDoubleClick = () => {
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current)
+      clickTimeoutRef.current = null
     }
+    setIsZoomed((prev) => !prev)
+  }
+
+  const handlePreviewClose = () => {
+    setIsPreviewOpen(false)
     setIsZoomed(false)
   }
 
@@ -94,21 +113,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   }
 
   return (
-    <div
-      ref={galleryRef}
-      className={`relative  ${
-        isFullScreen
-          ? 'bg-black h-screen w-screen p-4 flex justify-center items-center'
-          : ''
-      }`}
-    >
-      <button
-        onClick={handleFullScreenToggle}
-        className="absolute top-4 right-4 z-10 rounded-full p-2 bg-white bg-opacity-80 shadow-md"
-      >
-        {isFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-      </button>
-
+    <div className="relative">
       <div className="flex flex-col md:flex-row gap-6 p-4">
         {/* Thumbnails */}
         <div className="flex md:flex-col gap-3 overflow-auto">
@@ -144,8 +149,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         <div
           className="relative image-wrapper flex-1 flex items-center justify-center bg-gray-50 rounded-2xl p-6"
           onMouseMove={handleMouseMove}
-          onClick={handleZoomToggle}
-          style={{ cursor: isZoomed ? 'zoom-out' : 'zoom-in' }}
+          onClick={handleMainImageClick}
+          onDoubleClick={handleMainImageDoubleClick}
+          style={{ cursor: isZoomed ? 'zoom-out' : 'pointer' }}
         >
           {!imageLoaded && <div className="image-skeleton z-50" />}
 
@@ -184,6 +190,56 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           </button>
         </div>
       </div>
+
+      {isPreviewOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={handlePreviewClose}
+        >
+          <button
+            onClick={handlePreviewClose}
+            className="absolute top-4 right-4 rounded-full p-2 bg-white/90 shadow-md"
+            aria-label="Close image preview"
+          >
+            <X size={20} />
+          </button>
+
+          <button
+            onClick={(event) => {
+              event.stopPropagation()
+              handlePrevImage()
+            }}
+            className="absolute left-4 bg-white/90 rounded-full p-2"
+            aria-label="Previous image"
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          <div
+            className="max-h-[90vh] max-w-[90vw]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <img
+              src={selectedImage}
+              alt={name}
+              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+
+          <button
+            onClick={(event) => {
+              event.stopPropagation()
+              handleNextImage()
+            }}
+            className="absolute right-4 bg-white/90 rounded-full p-2"
+            aria-label="Next image"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
   Box,
@@ -9,31 +9,31 @@ import {
   PlaySquare,
   Settings,
   Tag,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import Logo from '../../public/logo.jpg'; // Assuming this works if Next handles image imports or use string path
-import { getCurrentUser, logout } from '../services/authService';
-import { ProductList } from '../types';
-import MenuSection from './MenuSection';
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import Logo from '../../public/logo.jpg' // Assuming this works if Next handles image imports or use string path
+import { getCurrentUser, logout } from '../services/authService'
+import { ProductList } from '../types'
+import MenuSection from './MenuSection'
 
 const ProductView = lazy(() =>
   import('./views/ProductView').then((module) => ({
     default: module.ProductView,
-  }))
+  })),
 )
 const CategoryView = lazy(() =>
   import('./views/CategoryView').then((module) => ({
     default: module.CategoryView,
-  }))
+  })),
 )
 const SettingsView = lazy(() =>
   import('./views/SettingsView').then((module) => ({
     default: module.SettingsView,
-  }))
+  })),
 )
 const VideoView = lazy(() =>
-  import('./views/VideoView').then((module) => ({ default: module.VideoView }))
+  import('./views/VideoView').then((module) => ({ default: module.VideoView })),
 )
 
 interface AdminDashboardProps {
@@ -96,10 +96,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
             fixed lg:static inset-y-0 left-0 z-30
             bg-white border-r border-slate-200 w-64 flex-shrink-0 flex flex-col 
             transition-transform duration-300 ease-in-out
-            ${sidebarOpen
-            ? 'translate-x-0'
-            : '-translate-x-full lg:hidden lg:w-0'
-          }
+            ${
+              sidebarOpen
+                ? 'translate-x-0'
+                : '-translate-x-full lg:hidden lg:w-0'
+            }
           `}
       >
         <div className="h-16 flex items-center gap-2 px-6 border-b border-slate-100">
@@ -128,11 +129,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
 
           <MenuSection
             title="Configuration"
-            items={[
-              { id: 'settings', label: 'Settings', icon: Settings },
-              // { id: 'analytics', label: 'Analytics', icon: BarChart3 }, // Placeholder
-              // { id: 'reports', label: 'Reports', icon: FileText }, // Placeholder
-            ]}
+            items={[{ id: 'settings', label: 'Settings', icon: Settings }]}
             activeTab={activeTab}
             setActiveTab={handleNavChange}
           />
@@ -164,8 +161,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
 
       {/* Main Content */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarOpen ? '' : 'ml-0'
-          }`}
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+          sidebarOpen ? '' : 'ml-0'
+        }`}
       >
         {/* Header */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 lg:px-8">

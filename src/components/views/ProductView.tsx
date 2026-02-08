@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Edit, Loader2, Plus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useProductMutations } from '../../hooks/useProductMutations'
 import { generatePlaceholderImage } from '../../lib/placeholderImage'
 import { getCategories } from '../../services/categoryService'
@@ -12,11 +12,16 @@ interface ProductViewProp {
   products: ProductList[]
 }
 
+const PAGE_SIZE_OPTIONS = [10, 20, 50]
+
 export const ProductView = ({ products }: ProductViewProp) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<ProductList | null>(null)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
+  const [searchQuery, setSearchQuery] = useState('')
   const { deleteProduct } = useProductMutations()
 
   // Load categories only when opening the modal to save performance
@@ -40,10 +45,45 @@ export const ProductView = ({ products }: ProductViewProp) => {
     }
   }
 
+  const normalizedQuery = searchQuery.trim().toLowerCase()
+  const filteredProducts = normalizedQuery
+    ? products.filter((product) =>
+        product.name.toLowerCase().includes(normalizedQuery),
+      )
+    : products
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const startIndex = (safeCurrentPage - 1) * pageSize
+  const paginatedProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + pageSize,
+  )
+
+  useEffect(() => {
+    if (currentPage !== safeCurrentPage) {
+      setCurrentPage(safeCurrentPage)
+    }
+  }, [currentPage, safeCurrentPage])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, pageSize])
+
+  const pageButtonCount = 5
+  const halfRange = Math.floor(pageButtonCount / 2)
+  let pageStart = Math.max(1, safeCurrentPage - halfRange)
+  let pageEnd = Math.min(totalPages, pageStart + pageButtonCount - 1)
+  pageStart = Math.max(1, pageEnd - pageButtonCount + 1)
+  const pageNumbers = []
+  for (let page = pageStart; page <= pageEnd; page += 1) {
+    pageNumbers.push(page)
+  }
+
   return (
     <>
       <div className="space-y-6 animate-in fade-in duration-300">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">
               Product Management
@@ -52,12 +92,22 @@ export const ProductView = ({ products }: ProductViewProp) => {
               Manage your catalog and stock.
             </p>
           </div>
-          <button
-            onClick={() => handleOpenModal(null)}
-            className="flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-xl hover:bg-primary-700 transition font-medium"
-          >
-            <Plus size={20} /> Add Product
-          </button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative">
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search by product name..."
+                className="w-full sm:w-64 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              />
+            </div>
+            <button
+              onClick={() => handleOpenModal(null)}
+              className="flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-xl hover:bg-primary-700 transition font-medium"
+            >
+              <Plus size={20} /> Add Product
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -73,7 +123,7 @@ export const ProductView = ({ products }: ProductViewProp) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {products.map((product) => (
+                {paginatedProducts.map((product) => (
                   <tr
                     key={product.id}
                     className="hover:bg-slate-50/50 transition cursor-pointer"
@@ -155,19 +205,109 @@ export const ProductView = ({ products }: ProductViewProp) => {
                   </tr>
                 ))}
 
-                {products.length === 0 && (
+                {filteredProducts.length === 0 && (
                   <tr>
                     <td
                       colSpan={5}
                       className="px-6 py-12 text-center text-slate-400"
                     >
-                      No products found. Click "Add Product" to create one.
+                      {products.length === 0
+                        ? 'No products found. Click "Add Product" to create one.'
+                        : 'No products match your search.'}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          {filteredProducts.length > 0 && (
+            <div className="flex flex-col gap-4 px-6 py-4 border-t border-slate-100 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <span>
+                  Showing{' '}
+                  <span className="font-semibold text-slate-700">
+                    {startIndex + 1}
+                  </span>
+                  -
+                  <span className="font-semibold text-slate-700">
+                    {Math.min(startIndex + pageSize, filteredProducts.length)}
+                  </span>{' '}
+                  of{' '}
+                  <span className="font-semibold text-slate-700">
+                    {filteredProducts.length}
+                  </span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <span>Rows</span>
+                  <select
+                    value={pageSize}
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value))
+                      setCurrentPage(1)
+                    }}
+                    className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={safeCurrentPage === 1}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:border-primary-300 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  First
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={safeCurrentPage === 1}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:border-primary-300 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Prev
+                </button>
+
+                {pageNumbers.map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`rounded-lg px-3 py-1.5 text-sm transition ${
+                      page === safeCurrentPage
+                        ? 'bg-primary-600 text-white'
+                        : 'border border-slate-200 text-slate-600 hover:border-primary-300 hover:text-primary-600'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={safeCurrentPage === totalPages}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:border-primary-300 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={safeCurrentPage === totalPages}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:border-primary-300 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -17,7 +17,7 @@ import {
   UploadCloud,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
 // Define the shape of our form
@@ -418,33 +418,42 @@ export const SettingsView = () => {
                           <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                             Category
                           </label>
-                          <select
-                            {...register(
-                              `banners.${index}.categoryId` as const,
-                              {
-                                setValueAs: (value) =>
-                                  value === '' ? null : Number(value),
-                              },
+                          <Controller
+                            control={control}
+                            name={`banners.${index}.categoryId` as const}
+                            defaultValue={field.categoryId ?? null}
+                            render={({ field: categoryField }) => (
+                              <select
+                                ref={categoryField.ref}
+                                value={categoryField.value ?? ''}
+                                onBlur={categoryField.onBlur}
+                                onChange={(event) => {
+                                  const value = event.target.value
+                                  categoryField.onChange(
+                                    value === '' ? null : Number(value),
+                                  )
+                                }}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                                disabled={isCategoriesLoading || index === 0}
+                              >
+                                <option value="">
+                                  {index === 0
+                                    ? 'Main banner (no category)'
+                                    : isCategoriesLoading
+                                      ? 'Loading categories...'
+                                      : 'Select Category'}
+                                </option>
+                                {categories.map((category) => (
+                                  <option key={category.id} value={category.id}>
+                                    {category.displayName || category.name}
+                                    {category.brand
+                                      ? ` (${category.brand.name})`
+                                      : ''}
+                                  </option>
+                                ))}
+                              </select>
                             )}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
-                            disabled={isCategoriesLoading || index === 0}
-                          >
-                            <option value="">
-                              {index === 0
-                                ? 'Main banner (no category)'
-                                : isCategoriesLoading
-                                  ? 'Loading categories...'
-                                  : 'Select Category'}
-                            </option>
-                            {categories.map((category) => (
-                              <option key={category.id} value={category.id}>
-                                {category.displayName || category.name}
-                                {category.brand
-                                  ? ` (${category.brand.name})`
-                                  : ''}
-                              </option>
-                            ))}
-                          </select>
+                          />
                           {!isCategoriesLoading && categories.length === 0 && (
                             <span className="text-slate-400 text-xs">
                               No categories found.
