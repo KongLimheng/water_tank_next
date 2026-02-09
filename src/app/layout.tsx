@@ -8,7 +8,7 @@ import Providers from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Fa De Manufacture Co., LTD.',
+  title: 'Water Tank Factory',
   description:
     'Fa De Manufacture Co., LTD. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
   icons: {
@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     description:
       'Fa De Manufacture Co., LTD. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
     title:
-      'Fa De Manufacture Co., LTD. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
-    siteName: 'Fa De Manufacture Co., LTD.',
+      'Water Tank Factory. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
+    siteName: 'Water Tank Factory',
     type: 'website',
   },
   twitter: {
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description:
       'Fa De Manufacture Co., LTD. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
     title:
-      'Fa De Manufacture Co., LTD. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
+      'Water Tank Factory. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
     card: 'summary_large_image',
   },
 }

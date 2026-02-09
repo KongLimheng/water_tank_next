@@ -118,6 +118,7 @@ export const ProductView = ({ products }: ProductViewProp) => {
                   <th className="px-6 py-4">Product Details</th>
                   <th className="px-6 py-4">Brand</th>
                   <th className="px-6 py-4">Category</th>
+                  <th className="px-6 py-4">Type</th>
                   <th className="px-6 py-4">Price</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
@@ -172,6 +173,11 @@ export const ProductView = ({ products }: ProductViewProp) => {
                     <td className="px-6 py-4">
                       <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
                         {product.category.name}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
+                        {product.type}
                       </span>
                     </td>
                     <td className="px-6 py-4 font-mono text-sm font-semibold text-slate-700">
