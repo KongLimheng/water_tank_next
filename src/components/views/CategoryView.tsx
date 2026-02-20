@@ -2,7 +2,7 @@ import { useBrandMutations } from '@/hooks/useBrandMutations'
 import { useCategoryMutations } from '@/hooks/useCategoryMutations'
 import { Brand, getBrands } from '@/services/brandService'
 import { getCategories } from '@/services/categoryService'
-import { CategoryList } from '@/types'
+import { Category, CategoryList } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import {
   Edit,
@@ -26,7 +26,7 @@ export const CategoryView: React.FC = () => {
 
   // --- MODAL STATES ---
   const [isCatModalOpen, setIsCatModalOpen] = useState(false)
-  const [editingCat, setEditingCat] = useState<CategoryList | null>(null)
+  const [editingCat, setEditingCat] = useState<Category | null>(null)
 
   const [isBrandModalOpen, setIsBrandModalOpen] = useState(false)
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
@@ -52,7 +52,7 @@ export const CategoryView: React.FC = () => {
   const { deleteBrand } = useBrandMutations()
 
   // --- HANDLERS ---
-  const handleOpenCat = (c: CategoryList | null) => {
+  const handleOpenCat = (c: Category | null) => {
     setEditingCat(c)
     setIsCatModalOpen(true)
   }
@@ -167,9 +167,9 @@ export const CategoryView: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-bold text-slate-700">
+                      {/* <td className="px-6 py-4 font-bold text-slate-700">
                         {cat.displayName || cat.name}
-                      </td>
+                      </td> */}
                       <td className="px-6 py-4 text-xs font-mono text-slate-400">
                         {cat.name}
                       </td>

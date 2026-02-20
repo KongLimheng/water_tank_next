@@ -114,6 +114,7 @@ export interface Brand {
 export interface CategoryList {
   id: number
   name: string
+  title?: string
   slug: string
   displayName?: string | null
   image?: string | null

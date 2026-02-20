@@ -8,6 +8,7 @@ import ProductDetailsModal from '../components/Product/ProductDetailsModal'
 import { PriceListView } from '../components/views/PriceListView'
 import { getProductsByBrandCategory } from '../services/productService'
 import { ProductList } from '../types'
+import { getCategoryById } from '@/services/categoryService'
 
 const ShopProducts = () => {
   const searchParams = useSearchParams()
@@ -16,12 +17,18 @@ const ShopProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState<ProductList | null>(
     null,
   )
+
   const { data: fetchedProducts, isLoading: isQueryLoading } = useQuery({
     queryKey: ['products', 'category', activeCategory],
     queryFn: () => getProductsByBrandCategory(activeCategory), // activeCategory is now string
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     enabled: !!activeCategory, // Only run if category exists
     placeholderData: (previousData) => previousData,
+  })
+
+  const { data: catById, isLoading: isCateLoading } = useQuery({
+    queryKey: ["category", activeCategory],
+    queryFn: ()=> getCategoryById(parseInt(activeCategory))
   })
 
   const visibleProducts = fetchedProducts || []
@@ -43,16 +50,17 @@ const ShopProducts = () => {
           </div>
         </div>
         {/* Product Grid */}
-        {isGridLoading ? (
+        {isGridLoading || isCateLoading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 size={48} className="text-primary-600 animate-spin" />
           </div>
-        ) : (
+        ) : catById ? (
           <PriceListView
             products={visibleProducts}
+            category={catById}
             onProductClick={setSelectedProduct}
           />
-        )}
+        ) : null}
       </div>
 
       <ProductDetailsModal

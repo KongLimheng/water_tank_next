@@ -66,6 +66,7 @@ model Category {
   name        String
   slug        String    @unique
   displayName String?
+  title       String?
   createdAt   DateTime  @default(now())
   image       String?
   brandId     Int?

@@ -1,14 +1,16 @@
 import { Package } from 'lucide-react'
 import React, { useMemo } from 'react'
-import { ProductList } from '../../types'
+import { Category, ProductList } from '../../types'
 
 interface PriceListViewProps {
   products: ProductList[]
+  category: Category
   onProductClick: (product: ProductList) => void
 }
 
 export const PriceListView: React.FC<PriceListViewProps> = ({
   products,
+  category,
   onProductClick,
 }) => {
   // 1. Grouping Logic
@@ -74,6 +76,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
 
     return groups
   }, [products])
+
 
   // Helper to render sections only if they have data
   const renderSection = (type: string, isOther = false) => {
@@ -147,7 +150,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
       {/* Page Header */}
       <div className="text-center mb-12">
         <h1 className="text-2xl md:text-5xl font-bold text-blue-900 mb-4 font-khmer tracking-tight">
-          តារាងតម្លៃធុងទឹក (Price List)
+          {category.title || "តារាងតម្លៃធុងទឹក (Price List)"}
         </h1>
         <div className="flex flex-col items-center gap-1">
           <div className="h-1.5 w-64 bg-red-600"></div>

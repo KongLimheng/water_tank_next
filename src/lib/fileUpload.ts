@@ -1,5 +1,9 @@
-import { mkdir, writeFile } from 'fs/promises'
+import { execFile } from 'child_process'
+import { chown, mkdir, writeFile } from 'fs/promises'
 import path from 'path'
+import { promisify } from 'util'
+
+const execFileAsync = promisify(execFile)
 
 export async function saveFile(file: File, folder: string): Promise<string> {
   const bytes = await file.arrayBuffer()
@@ -64,6 +68,18 @@ export async function saveFile(file: File, folder: string): Promise<string> {
   const filepath = path.join(uploadDir, filename)
 
   await writeFile(filepath, buffer)
+
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      const { stdout: uidOut } = await execFileAsync('id', ['-u', 'www-data'])
+      const { stdout: gidOut } = await execFileAsync('id', ['-g', 'www-data'])
+      const uid = parseInt(uidOut.trim(), 10)
+      const gid = parseInt(gidOut.trim(), 10)
+      await chown(filepath, uid, gid)
+    } catch (err) {
+      console.error('chown failed', err)
+    }
+  }
 
   return path.join(relativeUploadDir, filename).replace(/\\/g, '/')
 }

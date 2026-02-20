@@ -19,6 +19,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const name = formData.get('name') as string;
+    const title = formData.get('title') as string;
     const displayName = (formData.get('displayName') as string) || null;
     const uploadType = (formData.get('uploadType') as string) || 'categories';
     const brandIdRaw = formData.get('brandId') as string;
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
     const newCat = await prisma.category.create({
       data: {
         name,
+        title,
         slug,
         brandId,
         displayName,
