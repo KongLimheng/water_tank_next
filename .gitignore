@@ -26,3 +26,4 @@ dist-ssr
 
 public/uploads
 .next
+next-env.d.ts
