@@ -88,6 +88,7 @@ export interface SiteSettings {
   facebookUrl: string
   youtubeUrl: string
   banners: BannerItem[]
+  aboutUs: AboutUsData
 }
 
 export interface Video {
@@ -103,6 +104,37 @@ export interface BannerItem {
   name: string
   banner_image: string
   categoryId?: number | null
+}
+
+export interface AboutUsItem {
+  image?: string
+  content?: string // TipTap HTML content
+  imageFile?: File
+}
+
+export interface AboutUsSection3Item {
+  title?: string
+  image?: string
+  imageFile?: File
+}
+
+export interface AboutUsData {
+  section1: {
+    image?: string
+    content?: string // TipTap HTML content
+    imageFile?: File
+  }
+  section2: AboutUsItem[]
+  section3: {
+    description?: string // TipTap HTML content
+    items: AboutUsSection3Item[]
+  }
+}
+
+export interface AboutUsSubItem {
+  title?: string
+  description?: string
+  image?: string
 }
 
 export interface Brand {

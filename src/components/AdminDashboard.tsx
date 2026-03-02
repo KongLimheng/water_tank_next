@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'next/navigation'
 import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import Logo from '../../public/logo.jpg' // Assuming this works if Next handles image imports or use string path
-import { getCurrentUser, logout } from '../services/authService'
+import { getCurrentUser, logout, type User } from '../services/authService'
 import { ProductList } from '../types'
 import MenuSection from './MenuSection'
 
@@ -42,7 +42,12 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
   const router = useRouter()
-  const [user, setUser] = useState(getCurrentUser())
+  const [user, setUser] = useState<User | null>(null)
+
+  // Load user from localStorage on client
+  useEffect(() => {
+    setUser(getCurrentUser())
+  }, [])
 
   // Dashboard State
   const [activeTab, setActiveTab] = useState('products')

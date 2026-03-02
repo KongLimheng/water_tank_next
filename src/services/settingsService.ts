@@ -18,6 +18,45 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
   formData.append('youtubeUrl', settings.youtubeUrl || '')
   formData.append('uploadType', 'banners')
 
+  // Append About Us data
+  formData.append('aboutUs', JSON.stringify(settings.aboutUs || {}))
+
+  // Handle About Us file uploads
+  // settings.aboutUs is an object with section1, section2, section3
+  if (settings.aboutUs) {
+    // Section 1 image
+    if (settings.aboutUs.section1?.imageFile) {
+      formData.append('aboutUs_section1_imageFile', settings.aboutUs.section1.imageFile)
+    }
+
+    // Section 2 items images
+    if (Array.isArray(settings.aboutUs.section2)) {
+      settings.aboutUs.section2.forEach((item: any, itemIndex: number) => {
+        if (item.imageFile) {
+          formData.append(`aboutUs_section2_item_${itemIndex}_imageFile`, item.imageFile)
+        }
+      })
+    }
+
+    // Section 3 images
+    if (settings.aboutUs.section3) {
+      if (settings.aboutUs.section3.qualityImageFile) {
+        formData.append('aboutUs_section3_qualityImageFile', settings.aboutUs.section3.qualityImageFile)
+      }
+      if (settings.aboutUs.section3.certificateImageFile) {
+        formData.append('aboutUs_section3_certificateImageFile', settings.aboutUs.section3.certificateImageFile)
+      }
+      // Section 3 items images
+      if (Array.isArray(settings.aboutUs.section3.items)) {
+        settings.aboutUs.section3.items.forEach((item: any, itemIndex: number) => {
+          if (item.imageFile) {
+            formData.append(`aboutUs_section3_item_${itemIndex}_imageFile`, item.imageFile)
+          }
+        })
+      }
+    }
+  }
+
   const incomingBanners =
     Array.isArray(settings.banners) && settings.banners.length > 0
       ? settings.banners

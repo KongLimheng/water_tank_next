@@ -1,6 +1,12 @@
 import { getCategories } from '@/services/categoryService'
 import { getSettings, saveSettings } from '@/services/settingsService'
-import { Category, SiteSettings } from '@/types'
+import {
+  AboutUsData,
+  AboutUsItem,
+  AboutUsSection3Item,
+  Category,
+  SiteSettings,
+} from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import {
   AlertCircle,
@@ -17,8 +23,16 @@ import {
   UploadCloud,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Controller, useFieldArray, useForm } from 'react-hook-form'
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+} from 'react-hook-form'
 import { toast } from 'react-toastify'
+
+// Import the AboutUsSection component
+import AboutUsSection from './AboutUsSectionNew'
 
 // Define the shape of our form
 interface BannerItem {
@@ -34,12 +48,35 @@ interface SettingsFormValues {
   address: string
   mapUrl: string
   banners: BannerItem[]
+  aboutUs: AboutUsData
 }
 
 export const SettingsView = () => {
   const [isLoading, setIsLoading] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
 
   // 1. Setup React Hook Form
+  const methods = useForm<SettingsFormValues>({
+    defaultValues: {
+      phone: '',
+      email: '',
+      address: '',
+      mapUrl: '',
+      banners: [{ name: 'Main Banner', banner_image: '', categoryId: null }],
+      aboutUs: {
+        section1: {
+          image: '',
+          content: '',
+        },
+        section2: [{ image: '', content: '' }],
+        section3: {
+          description: '',
+          items: [{ title: 'Certificate 1', image: '' }],
+        },
+      },
+    },
+  })
+
   const {
     register,
     control,
@@ -47,16 +84,25 @@ export const SettingsView = () => {
     watch,
     getValues,
     reset,
-    formState: { errors, isDirty },
-  } = useForm<SettingsFormValues>({
-    defaultValues: {
-      phone: '',
-      email: '',
-      address: '',
-      mapUrl: '',
-      banners: [{ name: 'Main Banner', banner_image: '', categoryId: null }],
-    },
-  })
+    formState: { errors },
+  } = methods
+
+  // Watch all form values for manual dirty tracking
+  const watchedValues = watch()
+
+  // Store initial values for comparison
+  const [initialValues, setInitialValues] = useState<SettingsFormValues | null>(
+    null,
+  )
+
+  // Check if form is dirty by comparing current values with initial values
+  useEffect(() => {
+    if (initialValues) {
+      const isFormDirty =
+        JSON.stringify(watchedValues) !== JSON.stringify(initialValues)
+      setIsDirty(isFormDirty)
+    }
+  }, [watchedValues, initialValues])
 
   const { data: settings } = useQuery({
     queryKey: ['site-settings'],
@@ -104,13 +150,17 @@ export const SettingsView = () => {
           ? normalizedBanners
           : [{ name: 'Main Banner', banner_image: '', categoryId: null }]
 
-      reset({
+      const formValues = {
         phone: data.phone || '',
         email: data.email || '',
         address: data.address || '',
         mapUrl: data.mapUrl || '',
         banners: loadedBanners,
-      })
+        aboutUs: data.aboutUs,
+      }
+
+      reset(formValues)
+      setInitialValues(formValues)
     }
   }, [reset, settings])
 
@@ -194,19 +244,78 @@ export const SettingsView = () => {
         }),
       )
 
+      // Process aboutUs images
+      const processedAboutUs = {
+        section1: {
+          image: data.aboutUs.section1.image,
+          content: data.aboutUs.section1.content,
+          imageFile: data.aboutUs.section1.imageFile,
+        },
+        section2: await Promise.all(
+          data.aboutUs.section2.map(async (item: AboutUsItem) => ({
+            image: item.image,
+            content: item.content,
+            imageFile: item.imageFile,
+          })),
+        ),
+        section3: {
+          description: data.aboutUs.section3.description,
+
+          items: await Promise.all(
+            data.aboutUs.section3.items.map(
+              async (item: AboutUsSection3Item) => ({
+                title: item.title,
+                image: item.image,
+                imageFile: item.imageFile,
+              }),
+            ),
+          ),
+        },
+      }
+
       const cleanMapUrl = extractUrl(data.mapUrl)
 
       const payload = {
         ...data,
         mapUrl: cleanMapUrl,
-        banners: processedBanners, // This will be saved as JSON in Prisma
+        banners: processedBanners,
+        aboutUs: processedAboutUs,
       }
 
       await saveSettings(payload as unknown as SiteSettings)
 
-      // Re-fetch or reset to ensure clean state
-      reset({ ...data, mapUrl: cleanMapUrl, banners: processedBanners })
       toast.success('Settings saved successfully!')
+
+      // Re-fetch settings from server to get fresh data
+      try {
+        const updatedSettings = await getSettings()
+        const rawBanners =
+          (updatedSettings.banners as unknown as BannerItem[]) || []
+        const normalizedBanners = rawBanners.map((banner, index) => ({
+          name: banner.name || '',
+          banner_image: banner.banner_image || '',
+          categoryId:
+            index === 0 ? null : normalizeCategoryId(banner.categoryId),
+        }))
+        const loadedBanners =
+          normalizedBanners.length > 0
+            ? normalizedBanners
+            : [{ name: 'Main Banner', banner_image: '', categoryId: null }]
+
+        const formValues = {
+          phone: updatedSettings.phone || '',
+          email: updatedSettings.email || '',
+          address: updatedSettings.address || '',
+          mapUrl: updatedSettings.mapUrl || '',
+          banners: loadedBanners,
+          aboutUs: updatedSettings.aboutUs,
+        }
+
+        reset(formValues)
+        setInitialValues(formValues)
+      } catch (e) {
+        console.error('Failed to re-fetch settings after save', e)
+      }
     } catch (e) {
       console.error(e)
       toast.error('Failed to save settings')
@@ -226,177 +335,178 @@ export const SettingsView = () => {
         </div>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-8"
-      >
-        {/* --- Contact Info Section --- */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
-            <Phone size={20} className="text-primary-600" /> Contact Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                Phone Number
-              </label>
-              <div className="relative">
-                <Phone
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={16}
-                />
-                <input
-                  {...register('phone')}
-                  className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={16}
-                />
-                <input
-                  {...register('email')}
-                  className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
-                />
-              </div>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1.5">
-              Address
-            </label>
-            <div className="relative">
-              <MapPin
-                className="absolute left-3 top-3 text-slate-400"
-                size={16}
-              />
-              <textarea
-                {...register('address')}
-                rows={2}
-                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none resize-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* --- Map Configuration Section --- */}
-        <div className="space-y-4 pt-2">
-          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
-            <Globe size={20} className="text-primary-600" /> Map Location
-          </h3>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg mb-3 flex gap-2 items-start">
-              <HelpCircle size={16} className="shrink-0 mt-0.5" />
+      <FormProvider {...methods}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-8"
+        >
+          {/* --- Contact Info Section --- */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
+              <Phone size={20} className="text-primary-600" /> Contact Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="font-bold mb-1">How to get the correct link:</p>
-                <ol className="list-decimal ml-4 space-y-1">
-                  <li>
-                    Go to your location on <strong>Google Maps</strong>.
-                  </li>
-                  <li>
-                    Click the <strong>Share</strong> button.
-                  </li>
-                  <li>
-                    Select the <strong>Embed a map</strong> tab.
-                  </li>
-                  <li>
-                    Click <strong>Copy HTML</strong> and paste it below.
-                  </li>
-                </ol>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <Phone
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={16}
+                  />
+                  <input
+                    {...register('phone')}
+                    className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={16}
+                  />
+                  <input
+                    {...register('email')}
+                    className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
+                  />
+                </div>
               </div>
             </div>
-            <div className="lg:col-span-1 space-y-3">
-              <label className="block text-sm font-bold text-slate-700">
-                Google Maps Embed Code
-              </label>
-              <textarea
-                {...register('mapUrl')}
-                rows={4}
-                placeholder='<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-mono text-xs ${
-                  mapValidation.status === 'error'
-                    ? 'border-red-300 bg-red-50'
-                    : 'border-slate-200'
-                }`}
-              />
-
-              {/* Validation Messages */}
-              {mapValidation.status === 'error' && (
-                <div className="text-red-600 text-xs flex items-center gap-1.5">
-                  <AlertCircle size={14} /> {mapValidation.message}
-                </div>
-              )}
-              {mapValidation.status === 'warning' && (
-                <div className="text-amber-600 text-xs flex items-center gap-1.5">
-                  <HelpCircle size={14} /> {mapValidation.message}
-                </div>
-              )}
-              {mapValidation.status === 'valid' && (
-                <div className="text-green-600 text-xs flex items-center gap-1.5">
-                  <CheckCircle2 size={14} /> {mapValidation.message}
-                </div>
-              )}
-            </div>
-
-            {/* Map Preview Box */}
-            <div className="lg:col-span-1">
+            <div>
               <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                Live Preview
+                Address
               </label>
-              <div className="w-full h-40 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative shadow-inner">
-                {previewMapUrl ? (
-                  <iframe
-                    src={previewMapUrl}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    title="Map Preview"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2">
-                    <MapPin size={24} className="opacity-20" />
-                    <span className="text-xs">No map URL</span>
+              <div className="relative">
+                <MapPin
+                  className="absolute left-3 top-3 text-slate-400"
+                  size={16}
+                />
+                <textarea
+                  {...register('address')}
+                  rows={2}
+                  className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none resize-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* --- Map Configuration Section --- */}
+          <div className="space-y-4 pt-2">
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100">
+              <Globe size={20} className="text-primary-600" /> Map Location
+            </h3>
+
+            <div className="grid grid-cols-1 gap-6">
+              <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg mb-3 flex gap-2 items-start">
+                <HelpCircle size={16} className="shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold mb-1">How to get the correct link:</p>
+                  <ol className="list-decimal ml-4 space-y-1">
+                    <li>
+                      Go to your location on <strong>Google Maps</strong>.
+                    </li>
+                    <li>
+                      Click the <strong>Share</strong> button.
+                    </li>
+                    <li>
+                      Select the <strong>Embed a map</strong> tab.
+                    </li>
+                    <li>
+                      Click <strong>Copy HTML</strong> and paste it below.
+                    </li>
+                  </ol>
+                </div>
+              </div>
+              <div className="lg:col-span-1 space-y-3">
+                <label className="block text-sm font-bold text-slate-700">
+                  Google Maps Embed Code
+                </label>
+                <textarea
+                  {...register('mapUrl')}
+                  rows={4}
+                  placeholder='<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-mono text-xs ${
+                    mapValidation.status === 'error'
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-slate-200'
+                  }`}
+                />
+
+                {/* Validation Messages */}
+                {mapValidation.status === 'error' && (
+                  <div className="text-red-600 text-xs flex items-center gap-1.5">
+                    <AlertCircle size={14} /> {mapValidation.message}
+                  </div>
+                )}
+                {mapValidation.status === 'warning' && (
+                  <div className="text-amber-600 text-xs flex items-center gap-1.5">
+                    <HelpCircle size={14} /> {mapValidation.message}
+                  </div>
+                )}
+                {mapValidation.status === 'valid' && (
+                  <div className="text-green-600 text-xs flex items-center gap-1.5">
+                    <CheckCircle2 size={14} /> {mapValidation.message}
                   </div>
                 )}
               </div>
+
+              {/* Map Preview Box */}
+              <div className="lg:col-span-1">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                  Live Preview
+                </label>
+                <div className="w-full h-40 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative shadow-inner">
+                  {previewMapUrl ? (
+                    <iframe
+                      src={previewMapUrl}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      title="Map Preview"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2">
+                      <MapPin size={24} className="opacity-20" />
+                      <span className="text-xs">No map URL</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* --- Banners Section --- */}
-        <div className="space-y-4 pt-2">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <ImageIcon size={20} className="text-primary-600" /> Promotion
-              Banners
-            </h3>
-          </div>
+          {/* --- Banners Section --- */}
+          <div className="space-y-4 pt-2">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <ImageIcon size={20} className="text-primary-600" /> Promotion
+                Banners
+              </h3>
+            </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {fields.map((field, index) => {
-              return (
-                <div
-                  key={field.id}
-                  className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex gap-4 items-start animate-in slide-in-from-left-2"
-                >
-                  <div className="flex-col flex flex-1 gap-2">
-                    {/* Inputs */}
-                    <div className="w-full space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {/* {index === 0 && (
+            <div className="grid grid-cols-1 gap-4">
+              {fields.map((field, index) => {
+                return (
+                  <div
+                    key={field.id}
+                    className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex gap-4 items-start animate-in slide-in-from-left-2"
+                  >
+                    <div className="flex-col flex flex-1 gap-2">
+                      {/* Inputs */}
+                      <div className="w-full space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {/* {index === 0 && (
                           <span className="text-[9px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">
                             Default
                           </span>
                         )} */}
-                        {/* <div>
+                          {/* <div>
                           <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-2">
                             {index === 0 ? 'Main Banner' : 'Banner Name'}
                            
@@ -414,154 +524,162 @@ export const SettingsView = () => {
                             </span>
                           )}
                         </div> */}
-                        <div>
-                          <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                            Category
-                          </label>
-                          <Controller
-                            control={control}
-                            name={`banners.${index}.categoryId` as const}
-                            defaultValue={field.categoryId ?? null}
-                            render={({ field: categoryField }) => (
-                              <select
-                                ref={categoryField.ref}
-                                value={categoryField.value ?? ''}
-                                onBlur={categoryField.onBlur}
-                                onChange={(event) => {
-                                  const value = event.target.value
-                                  categoryField.onChange(
-                                    value === '' ? null : Number(value),
-                                  )
-                                }}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
-                                disabled={isCategoriesLoading || index === 0}
-                              >
-                                <option value="">
-                                  {index === 0
-                                    ? 'Main banner (no category)'
-                                    : isCategoriesLoading
-                                      ? 'Loading categories...'
-                                      : 'Select Category'}
-                                </option>
-                                {categories.map((category) => (
-                                  <option key={category.id} value={category.id}>
-                                    {category.displayName || category.name}
-                                    {category.brand
-                                      ? ` (${category.brand.name})`
-                                      : ''}
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                              Category
+                            </label>
+                            <Controller
+                              control={control}
+                              name={`banners.${index}.categoryId` as const}
+                              defaultValue={field.categoryId ?? null}
+                              render={({ field: categoryField }) => (
+                                <select
+                                  ref={categoryField.ref}
+                                  value={categoryField.value ?? ''}
+                                  onBlur={categoryField.onBlur}
+                                  onChange={(event) => {
+                                    const value = event.target.value
+                                    categoryField.onChange(
+                                      value === '' ? null : Number(value),
+                                    )
+                                  }}
+                                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                                  disabled={isCategoriesLoading || index === 0}
+                                >
+                                  <option value="">
+                                    {index === 0
+                                      ? 'Main banner (no category)'
+                                      : isCategoriesLoading
+                                        ? 'Loading categories...'
+                                        : 'Select Category'}
                                   </option>
-                                ))}
-                              </select>
+                                  {categories.map((category) => (
+                                    <option
+                                      key={category.id}
+                                      value={category.id}
+                                    >
+                                      {category.displayName || category.name}
+                                      {category.brand
+                                        ? ` (${category.brand.name})`
+                                        : ''}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                            />
+                            {!isCategoriesLoading &&
+                              categories.length === 0 && (
+                                <span className="text-slate-400 text-xs">
+                                  No categories found.
+                                </span>
+                              )}
+                          </div>
+                        </div>
+
+                        {/* Hidden input to store the URL text (if manually editing or verifying) */}
+                        <div className="hidden">
+                          <input
+                            {...register(
+                              `banners.${index}.banner_image` as const,
                             )}
                           />
-                          {!isCategoriesLoading && categories.length === 0 && (
-                            <span className="text-slate-400 text-xs">
-                              No categories found.
-                            </span>
-                          )}
                         </div>
                       </div>
 
-                      {/* Hidden input to store the URL text (if manually editing or verifying) */}
-                      <div className="hidden">
-                        <input
-                          {...register(
-                            `banners.${index}.banner_image` as const,
-                          )}
-                        />
+                      {/* Image Preview / Upload */}
+                      <div className="w-full h-40 shrink-0 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
+                        {field.banner_image ? (
+                          <img
+                            src={field.banner_image}
+                            alt="Banner"
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-slate-400">
+                            <ImageIcon size={24} />
+                          </div>
+                        )}
+
+                        {/* Hidden File Input + Overlay Label */}
+                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium">
+                          <UploadCloud size={20} className="mb-1" />
+                          <span>Change</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleBannerImageChange(index, e.target.files)
+                            }
+                          />
+                        </label>
                       </div>
                     </div>
 
-                    {/* Image Preview / Upload */}
-                    <div className="w-full h-40 shrink-0 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
-                      {field.banner_image ? (
-                        <img
-                          src={field.banner_image}
-                          alt="Banner"
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-slate-400">
-                          <ImageIcon size={24} />
-                        </div>
-                      )}
-
-                      {/* Hidden File Input + Overlay Label */}
-                      <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium">
-                        <UploadCloud size={20} className="mb-1" />
-                        <span>Change</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleBannerImageChange(index, e.target.files)
-                          }
-                        />
-                      </label>
-                    </div>
+                    {/* Actions */}
+                    {index > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className={`p-2 rounded-lg transition self-start md:self-center ${
+                          fields.length === 1
+                            ? 'text-slate-300 cursor-not-allowed'
+                            : 'text-slate-400 hover:text-red-500 hover:bg-red-50'
+                        }`}
+                        title={
+                          fields.length === 1
+                            ? 'At least one banner is required'
+                            : 'Remove Banner'
+                        }
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
+                )
+              })}
 
-                  {/* Actions */}
-                  {index > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className={`p-2 rounded-lg transition self-start md:self-center ${
-                        fields.length === 1
-                          ? 'text-slate-300 cursor-not-allowed'
-                          : 'text-slate-400 hover:text-red-500 hover:bg-red-50'
-                      }`}
-                      title={
-                        fields.length === 1
-                          ? 'At least one banner is required'
-                          : 'Remove Banner'
-                      }
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
+              {fields.length === 0 && (
+                <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
+                  No banners added yet.
                 </div>
-              )
-            })}
+              )}
 
-            {fields.length === 0 && (
-              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
-                No banners added yet.
-              </div>
-            )}
-
-            {fields.length < 10 && (
-              <button
-                type="button"
-                onClick={() =>
-                  append({ name: '', banner_image: '', categoryId: null })
-                }
-                className=" text-xs font-bold text-primary-600 flex items-center gap-1 hover:underline justify-self-end"
-              >
-                <Plus size={14} /> Add Banner
-              </button>
-            )}
+              {fields.length < 10 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    append({ name: '', banner_image: '', categoryId: null })
+                  }
+                  className=" text-xs font-bold text-primary-600 flex items-center gap-1 hover:underline justify-self-end"
+                >
+                  <Plus size={14} /> Add Banner
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* --- Save Button --- */}
-        <div className="flex justify-end pt-4 border-t border-slate-100">
-          <button
-            type="submit"
-            disabled={isLoading || !isDirty}
-            className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full"></span>
-            ) : (
-              <>
-                <Save size={18} /> Save Settings
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+          {/* --- About Us Section --- */}
+          <AboutUsSection />
+
+          {/* --- Save Button --- */}
+          <div className="flex justify-end pt-4 border-t border-slate-100">
+            <button
+              type="submit"
+              disabled={isLoading || !isDirty}
+              className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full"></span>
+              ) : (
+                <>
+                  <Save size={18} /> Save Settings
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   )
 }

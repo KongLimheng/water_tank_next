@@ -1,6 +1,6 @@
 import { api } from './apiInstance'
 
-interface User {
+export interface User {
   id: number
   username: string
   role: string
