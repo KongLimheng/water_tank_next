@@ -1,6 +1,6 @@
 import { useCategoryMutations } from '@/hooks/useCategoryMutations'
 import { Brand } from '@/services/brandService'
-import { Category, CategoryList } from '@/types'
+import { Category } from '@/types'
 import { Camera, Upload, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -10,7 +10,6 @@ interface CategoryFormValues {
   name: string
   displayName: string
   brandId: string
-  title?: string
 }
 
 export const CategoryModal: React.FC<{
@@ -39,7 +38,6 @@ export const CategoryModal: React.FC<{
       if (category) {
         reset({
           name: category.name,
-          title: category.title || '',
           displayName: category.displayName || '',
           brandId: category.brandId?.toString() || '',
         })
@@ -62,7 +60,6 @@ export const CategoryModal: React.FC<{
     // 3. Construct FormData
     const formData = new FormData()
     formData.append('name', data.name)
-    formData.append('title', data.title || 'តារាងតម្លៃធុងទឹក (Price List)')
     formData.append('displayName', data.displayName || '')
     if (data.brandId) {
       formData.append('brandId', data.brandId)
@@ -162,22 +159,6 @@ export const CategoryModal: React.FC<{
               {errors.name && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.name.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                PriceList Title
-              </label>
-              <input
-                {...register('title')}
-                className={`w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none `}
-                placeholder="price list"
-              />
-              {errors.title && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.title.message}
                 </p>
               )}
             </div>
