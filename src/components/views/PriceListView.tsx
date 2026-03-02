@@ -106,7 +106,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
           <div className="flex-1 w-full">
             <PriceTable
               items={group.vertical}
-              title="ធុងឈរ (Vertical Tanks)"
+              title="Vertical Tanks"
               subtitle=""
               onRowClick={onProductClick}
               isHorizontal={false}
@@ -131,7 +131,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
           <div className="flex-1 w-full min-w-0">
             <PriceTable
               items={group.horizontal}
-              title="ធុងទឹកផ្តេក (Horizontal Tanks)"
+              title="Horizontal Tanks"
               subtitle=""
               onRowClick={onProductClick}
               isHorizontal={true}
@@ -223,9 +223,6 @@ const PriceTable = ({
 
   return (
     <div className="border border-slate-400 h-full flex flex-col relative">
-      <div className="text-center font-bold text-blue-900 bg-slate-50 py-2 border-b-2 border-slate-400">
-        {title}
-      </div>
       {/* Table Header */}
       <div
         className="text-center font-bold border-b-2 border-slate-400 bg-slate-50"
