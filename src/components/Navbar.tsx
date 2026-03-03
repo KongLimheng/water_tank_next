@@ -79,6 +79,17 @@ const Navbar: React.FC = () => {
               Product
             </Link>
 
+            {/* About Us Link */}
+            <Link
+              href="/about"
+              className={`text-sm font-medium transition-colors hover:text-primary-600 ${pathname === '/about'
+                ? 'text-primary-600 '
+                : 'text-slate-600'
+                }`}
+            >
+              About Us
+            </Link>
+
             {/* Video Guide Link */}
             <Link
               href="/videos"
@@ -105,13 +116,36 @@ const Navbar: React.FC = () => {
         <div className="md:hidden border-t border-slate-100 bg-white">
           <div className="px-4 py-4 space-y-2">
             <Link
-              href="/products"
-              className={`text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/products')
+              href="/"
+              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/')
                 ? 'text-primary-600 '
                 : 'text-slate-600'
                 }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Home
+            </Link>
+
+            <Link
+              href="/products"
+              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/products')
+                ? 'text-primary-600 '
+                : 'text-slate-600'
+                }`}
+              onClick={() => setMobileMenuOpen(false)}
             >
               Product
+            </Link>
+
+            <Link
+              href="/about"
+              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${pathname === '/about'
+                ? 'text-primary-600 '
+                : 'text-slate-600'
+                }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About Us
             </Link>
 
             <div className="border-t border-slate-100 my-2"></div>

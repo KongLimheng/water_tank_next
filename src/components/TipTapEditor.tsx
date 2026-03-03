@@ -12,6 +12,7 @@ import {
   AlignRight,
   Bold,
   ChevronDown,
+  Heading1,
   Heading2,
   Heading3,
   Italic,
@@ -249,6 +250,20 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
         </button>
 
         <div className="w-px bg-slate-300 h-6"></div>
+        <button
+          type="button"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
+          className={`p-2 rounded hover:bg-slate-200 transition ${
+            editor.isActive('heading', { level: 1 })
+              ? 'bg-primary-100 text-primary-600'
+              : ''
+          }`}
+          title="Heading 1"
+        >
+          <Heading1 size={16} />
+        </button>
         <button
           type="button"
           onClick={() =>

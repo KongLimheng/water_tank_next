@@ -119,11 +119,7 @@ export interface AboutUsSection3Item {
 }
 
 export interface AboutUsData {
-  section1: {
-    image?: string
-    content?: string // TipTap HTML content
-    imageFile?: File
-  }
+  section1: Section1
   section2: AboutUsItem[]
   section3: {
     description?: string // TipTap HTML content
@@ -131,10 +127,10 @@ export interface AboutUsData {
   }
 }
 
-export interface AboutUsSubItem {
-  title?: string
-  description?: string
-  image?: string
+export interface Section1 {
+  image: string
+  content: string
+  imageFile?: any
 }
 
 export interface Brand {

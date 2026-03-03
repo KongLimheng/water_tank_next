@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ToastContainer } from 'react-toastify'
@@ -56,7 +57,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={inter.className} suppressHydrationWarning={true}>
+      <body className={cn(inter.className)} suppressHydrationWarning={true}>
         <Providers>
           {children}
           <ToastContainer

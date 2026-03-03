@@ -1,17 +1,12 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useSettings } from '@/contexts/SettingsContext'
 import { useRouter } from 'next/navigation'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
-import { getSettings } from '../services/settingsService'
-import { BannerItem } from '../types'
+import type { BannerItem } from '../types'
 
 export const Hero: React.FC = () => {
-  const { data: settings, isLoading: isSettingsLoading } = useQuery({
-    queryKey: ['site-settings'],
-    queryFn: getSettings,
-    staleTime: 1000 * 60 * 60,
-  })
+  const { settings, isLoading: isSettingsLoading } = useSettings()
 
   if (isSettingsLoading) return <HomeSkeleton />
   if (!settings || settings.banners.length === 0) return null
