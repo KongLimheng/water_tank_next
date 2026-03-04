@@ -36,7 +36,7 @@ export default function AboutUsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white px-8 lg:px-16 py-4">
+    <div className="min-h-screen px-5 md:px-10 xl:px-40 bg-white  py-4">
       {/* 1. Banner & Intro */}
       <HeroSection data={aboutUs.section1} />
 
@@ -45,6 +45,6 @@ export default function AboutUsPage() {
 
       {/* 3. Certificates Grid */}
       <CertificatesSection data={aboutUs.section3} />
-    </main>
+    </div>
   )
 }

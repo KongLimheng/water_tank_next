@@ -6,7 +6,9 @@ export const getSettings = async (): Promise<SiteSettings> => {
   return data
 }
 
-export const saveSettings = async (settings: any): Promise<SiteSettings> => {
+export const saveSettings = async (
+  settings: SiteSettings,
+): Promise<SiteSettings> => {
   const formData = new FormData()
 
   // Append basic fields
@@ -14,8 +16,6 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
   formData.append('email', settings.email || '')
   formData.append('address', settings.address || '')
   formData.append('mapUrl', settings.mapUrl || '')
-  formData.append('facebookUrl', settings.facebookUrl || '')
-  formData.append('youtubeUrl', settings.youtubeUrl || '')
   formData.append('uploadType', 'banners')
 
   // Append About Us data
@@ -26,33 +26,38 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
   if (settings.aboutUs) {
     // Section 1 image
     if (settings.aboutUs.section1?.imageFile) {
-      formData.append('aboutUs_section1_imageFile', settings.aboutUs.section1.imageFile)
+      formData.append(
+        'aboutUs_section1_imageFile',
+        settings.aboutUs.section1.imageFile,
+      )
     }
 
     // Section 2 items images
     if (Array.isArray(settings.aboutUs.section2)) {
       settings.aboutUs.section2.forEach((item: any, itemIndex: number) => {
         if (item.imageFile) {
-          formData.append(`aboutUs_section2_item_${itemIndex}_imageFile`, item.imageFile)
+          formData.append(
+            `aboutUs_section2_item_${itemIndex}_imageFile`,
+            item.imageFile,
+          )
         }
       })
     }
 
     // Section 3 images
     if (settings.aboutUs.section3) {
-      if (settings.aboutUs.section3.qualityImageFile) {
-        formData.append('aboutUs_section3_qualityImageFile', settings.aboutUs.section3.qualityImageFile)
-      }
-      if (settings.aboutUs.section3.certificateImageFile) {
-        formData.append('aboutUs_section3_certificateImageFile', settings.aboutUs.section3.certificateImageFile)
-      }
       // Section 3 items images
       if (Array.isArray(settings.aboutUs.section3.items)) {
-        settings.aboutUs.section3.items.forEach((item: any, itemIndex: number) => {
-          if (item.imageFile) {
-            formData.append(`aboutUs_section3_item_${itemIndex}_imageFile`, item.imageFile)
-          }
-        })
+        settings.aboutUs.section3.items.forEach(
+          (item: any, itemIndex: number) => {
+            if (item.imageFile) {
+              formData.append(
+                `aboutUs_section3_item_${itemIndex}_imageFile`,
+                item.imageFile,
+              )
+            }
+          },
+        )
       }
     }
   }
@@ -65,7 +70,7 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
   if (Array.isArray(incomingBanners)) {
     const bannerMetadata: any[] = []
     incomingBanners.forEach((banner: any, index: number) => {
-      const categoryId = index === 0 ? null : banner.categoryId ?? null
+      const categoryId = index === 0 ? null : (banner.categoryId ?? null)
       if (banner.file) {
         // This is a NEW upload
         // Append the file with a specific key.
@@ -97,6 +102,18 @@ export const saveSettings = async (settings: any): Promise<SiteSettings> => {
 
     // Append the metadata JSON
     formData.append('banners_metadata', JSON.stringify(bannerMetadata))
+    formData.append('socials', JSON.stringify(settings.socials || []))
+
+    if (settings.socials) {
+      // Section 1 image
+      if (Array.isArray(settings.socials)) {
+        settings.socials.forEach((social: any, index: number) => {
+          if (social.imageFile) {
+            formData.append(`socials_${index}_imageFile`, social.imageFile)
+          }
+        })
+      }
+    }
   }
 
   // Send as Multipart

@@ -1,9 +1,9 @@
+import { cleanImage } from '@/lib/cleanImage'
 import { saveFile } from '@/lib/fileUpload'
 import { prisma } from '@/lib/prismaClient' // Now should verify
+import { SocialItem } from '@/types'
 import { Prisma } from '@prisma/client'
-import { unlink } from 'fs/promises'
 import { NextResponse } from 'next/server'
-import path from 'path'
 
 export async function GET() {
   try {
@@ -19,6 +19,7 @@ export async function GET() {
         mapUrl: '',
         banners: [],
         aboutUs: [],
+        socials: [],
       })
     }
     return NextResponse.json(settings)
@@ -37,10 +38,10 @@ export async function PUT(req: Request) {
     const email = formData.get('email') as string
     const address = formData.get('address') as string
     const mapUrl = formData.get('mapUrl') as string
-    const facebookUrl = formData.get('facebookUrl') as string
-    const youtubeUrl = formData.get('youtubeUrl') as string
+
     const bannersMetadataRaw = formData.get('banners_metadata') as string
     const aboutUsRaw = formData.get('aboutUs') as string
+    const socialsRaw = formData.get('socials') as string
 
     const oldSettings = await prisma.siteSettings.findUnique({
       where: { id: 1 },
@@ -51,14 +52,20 @@ export async function PUT(req: Request) {
     }
 
     // Parse About Us data
+    let socialData: SocialItem[] = []
+    if (socialsRaw) {
+      try {
+        socialData = JSON.parse(socialsRaw)
+      } catch (e) {
+        console.error('Error parsing aboutUs:', e)
+      }
+    }
+
+    // Parse About Us data
     let newAboutUsData: any = {}
     if (aboutUsRaw) {
       try {
         newAboutUsData = JSON.parse(aboutUsRaw)
-        console.log(
-          'Received aboutUs data:',
-          JSON.stringify(newAboutUsData, null, 2),
-        )
       } catch (e) {
         console.error('Error parsing aboutUs:', e)
       }
@@ -81,6 +88,8 @@ export async function PUT(req: Request) {
         newFiles.push(value)
       }
     }
+    // ========================================================
+    // ========================================================
 
     let fileIndex = 0
     const finalBanners: any[] = []
@@ -173,6 +182,18 @@ export async function PUT(req: Request) {
       return processedSection
     })()
 
+    const processSocial: any[] = await Promise.all(
+      socialData.map(async (item, index) => {
+        if (item.imageFile) {
+          const file = formData.get(`socials_${index}_imageFile`)
+          if (file instanceof File) {
+            return { ...item, image: await saveFile(file, 'socials') }
+          }
+        }
+        return item
+      }),
+    )
+
     // Upsert settings
     const updated = await prisma.siteSettings.upsert({
       where: { id: 1 },
@@ -181,10 +202,9 @@ export async function PUT(req: Request) {
         email,
         address,
         mapUrl,
-        facebookUrl,
-        youtubeUrl,
         banners: finalBanners as Prisma.InputJsonValue,
         aboutUs: processedAboutUs as Prisma.InputJsonValue,
+        socials: processSocial as Prisma.InputJsonValue,
       },
       create: {
         id: 1,
@@ -192,8 +212,6 @@ export async function PUT(req: Request) {
         email,
         address,
         mapUrl,
-        facebookUrl,
-        youtubeUrl,
         banners: finalBanners as Prisma.InputJsonValue,
         aboutUs: processedAboutUs as Prisma.InputJsonValue,
       },
@@ -212,22 +230,7 @@ export async function PUT(req: Request) {
 
       const urlsToDelete = oldUrls.filter((url) => !newUrls.includes(url))
 
-      for (const url of urlsToDelete) {
-        try {
-          const urlParts = url.split('/')
-          const filename = urlParts[urlParts.length - 1]
-          const filePath = path.join(
-            process.cwd(),
-            'public',
-            'uploads',
-            'banners',
-            filename,
-          )
-          await unlink(filePath).catch(() => {})
-        } catch (e) {
-          console.error('Error deleting orphan image', e)
-        }
-      }
+      await Promise.all(urlsToDelete.map((url) => cleanImage(url, 'banners')))
     }
 
     // Delete old About Us images
@@ -245,12 +248,7 @@ export async function PUT(req: Request) {
             .filter((url: string) => typeof url === 'string'),
         )
       }
-      if (processedAboutUs.section3?.qualityImage) {
-        newUrls.push(processedAboutUs.section3.qualityImage)
-      }
-      if (processedAboutUs.section3?.certificateImage) {
-        newUrls.push(processedAboutUs.section3.certificateImage)
-      }
+
       if (Array.isArray(processedAboutUs.section3?.items)) {
         newUrls.push(
           ...processedAboutUs.section3.items
@@ -284,22 +282,24 @@ export async function PUT(req: Request) {
         (url) => url && !newUrls.includes(url),
       )
 
-      for (const url of urlsToDelete) {
-        try {
-          const urlParts = url.split('/')
-          const filename = urlParts[urlParts.length - 1]
-          const filePath = path.join(
-            process.cwd(),
-            'public',
-            'uploads',
-            'about-us',
-            filename,
-          )
-          await unlink(filePath).catch(() => {})
-        } catch (e) {
-          console.error('Error deleting old about us image', e)
-        }
-      }
+      await Promise.all([
+        ...urlsToDelete.map((url) => cleanImage(url, 'about-us')),
+      ])
+    }
+
+    if (oldSettings?.socials && Array.isArray(oldSettings.socials)) {
+      const oldSocials = oldSettings.socials as any[]
+
+      const oldUrls = oldSocials
+        .map((s) => s.image)
+        .filter((url) => typeof url === 'string')
+      const newUrls = processSocial
+        .map((s) => s.image)
+        .filter((url) => typeof url === 'string')
+
+      const urlsToDelete = oldUrls.filter((url) => !newUrls.includes(url))
+
+      await Promise.all(urlsToDelete.map((url) => cleanImage(url, 'socials')))
     }
 
     return NextResponse.json(updated)

@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { MenuIcon, PlaySquare } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
-import Logo from '../../public/logo.jpg'; // Check path
+import { MenuIcon, PlaySquare } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
+import Logo from '../../public/logo.jpg' // Check path
 
 const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -43,13 +43,13 @@ const Navbar: React.FC = () => {
                 src={Logo.src}
                 className="rounded-full shadow-2xl"
                 alt="Logo"
-                loading='lazy'
+                loading="lazy"
                 width={40}
                 height={40}
               />
             </div>
             <div>
-              <h1 className="text-sm md:text-xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-sm md:text-lg font-bold text-slate-900 tracking-tight">
                 Fa De Manufacture Co., LTD.
               </h1>
               <p className="text-[8px] md:text-[10px] text-slate-500 font-medium uppercase">
@@ -63,18 +63,20 @@ const Navbar: React.FC = () => {
             {/* Home Link */}
             <Link
               href="/"
-              className={`text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
-                }`}
+              className={`text-sm font-medium transition-colors hover:text-primary-600 ${
+                isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
+              }`}
             >
               Home
             </Link>
 
             <Link
               href="/products"
-              className={`text-sm font-medium transition-colors hover:text-primary-600  py-2 px-2 rounded-xl ${isActiveExact('/products') || isActiveExact('/shop')
-                ? 'text-primary-600 '
-                : 'text-slate-600'
-                }`}
+              className={`text-sm font-medium transition-colors hover:text-primary-600  py-2 px-2 rounded-xl ${
+                isActiveExact('/products') || isActiveExact('/shop')
+                  ? 'text-primary-600 '
+                  : 'text-slate-600'
+              }`}
             >
               Product
             </Link>
@@ -82,10 +84,9 @@ const Navbar: React.FC = () => {
             {/* About Us Link */}
             <Link
               href="/about"
-              className={`text-sm font-medium transition-colors hover:text-primary-600 ${pathname === '/about'
-                ? 'text-primary-600 '
-                : 'text-slate-600'
-                }`}
+              className={`text-sm font-medium transition-colors hover:text-primary-600 ${
+                pathname === '/about' ? 'text-primary-600 ' : 'text-slate-600'
+              }`}
             >
               About Us
             </Link>
@@ -93,10 +94,11 @@ const Navbar: React.FC = () => {
             {/* Video Guide Link */}
             <Link
               href="/videos"
-              className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/videos')
-                ? 'text-primary-600 '
-                : 'text-slate-600'
-                }`}
+              className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary-600 ${
+                isActiveExact('/videos')
+                  ? 'text-primary-600 '
+                  : 'text-slate-600'
+              }`}
             >
               <PlaySquare size={16} /> Video Guide
             </Link>
@@ -106,7 +108,7 @@ const Navbar: React.FC = () => {
             className="md:hidden p-2 text-slate-600"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <MenuIcon className='size-6' />
+            <MenuIcon className="size-6" />
           </button>
         </div>
       </div>
@@ -117,10 +119,9 @@ const Navbar: React.FC = () => {
           <div className="px-4 py-4 space-y-2">
             <Link
               href="/"
-              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/')
-                ? 'text-primary-600 '
-                : 'text-slate-600'
-                }`}
+              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
+                isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
@@ -128,10 +129,11 @@ const Navbar: React.FC = () => {
 
             <Link
               href="/products"
-              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${isActiveExact('/products')
-                ? 'text-primary-600 '
-                : 'text-slate-600'
-                }`}
+              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
+                isActiveExact('/products')
+                  ? 'text-primary-600 '
+                  : 'text-slate-600'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Product
@@ -139,10 +141,9 @@ const Navbar: React.FC = () => {
 
             <Link
               href="/about"
-              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${pathname === '/about'
-                ? 'text-primary-600 '
-                : 'text-slate-600'
-                }`}
+              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
+                pathname === '/about' ? 'text-primary-600 ' : 'text-slate-600'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               About Us
@@ -152,10 +153,11 @@ const Navbar: React.FC = () => {
             <Link
               href="/videos"
               onClick={() => setMobileMenuOpen(false)}
-              className={`w-full text-sm text-left py-2 rounded-lg flex items-center gap-2 ${isActiveExact('/videos')
-                ? 'text-primary-600 '
-                : 'text-slate-600'
-                }`}
+              className={`w-full text-sm text-left py-2 rounded-lg flex items-center gap-2 ${
+                isActiveExact('/videos')
+                  ? 'text-primary-600 '
+                  : 'text-slate-600'
+              }`}
             >
               Video Guides
             </Link>

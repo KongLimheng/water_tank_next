@@ -1,7 +1,9 @@
 'use client'
 
 import { useSettings } from '@/contexts/SettingsContext'
-import { Facebook } from 'lucide-react'
+import { generatePlaceholderImage } from '@/lib/placeholderImage'
+import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 export default function Footer() {
   const { settings, isLoading: isSettingsLoading } = useSettings()
@@ -21,7 +23,7 @@ export default function Footer() {
           </div>
         ) : settings ? (
           <>
-            <div className="mb-8 ">
+            <div className="mb-8">
               <h3 className="text-xl md:text-2xl xl:text-4xl font-bold mb-6 font-khmer">
                 លោកអ្នកអាចទំនាក់ទំនងយើងតាមរយៈ៖
               </h3>
@@ -48,6 +50,39 @@ export default function Footer() {
                   <span className="">{settings.address}</span>
                 </div>
               </div>
+
+              <div className="flex flex-col items-start gap-6 mt-4">
+                {/* Social Icons */}
+
+                {settings.socials &&
+                  settings.socials.map((social, index) => {
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          'rounded-full overflow-hidden size-10 relative',
+                          social.url ? 'cursor-pointer' : '',
+                        )}
+                        onClick={() => {
+                          if (social.url) {
+                            window.open(social.url, '_blank')
+                          }
+                        }}
+                      >
+                        <Image
+                          src={
+                            social.image ||
+                            generatePlaceholderImage(`Social ${index + 1}`)
+                          }
+                          alt={social.url || `Social Icon ${index + 1}`}
+                          fill
+                          className="size-full object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    )
+                  })}
+              </div>
             </div>
 
             {/* Map Section */}
@@ -70,27 +105,6 @@ export default function Footer() {
                 <div className="absolute inset-0 bg-blue-900/10 pointer-events-none mix-blend-overlay"></div>
               </div>
             )}
-
-            {/* Bottom Section */}
-            <div className="flex flex-col items-center gap-6 mt-8">
-              {/* Social Icons */}
-              <div className="flex gap-4">
-                {settings.facebookUrl && (
-                  <a
-                    href={settings.facebookUrl}
-                    className="bg-[#1877F2] p-2 rounded text-white hover:opacity-90 transition-opacity transform hover:scale-105"
-                  >
-                    <Facebook size={24} fill="white" className="stroke-none" />
-                  </a>
-                )}
-              </div>
-
-              <div className="text-center space-y-2">
-                <p className="text-slate-300 font-medium text-sm md:text-base">
-                  {settings.address}
-                </p>
-              </div>
-            </div>
           </>
         ) : null}
       </div>

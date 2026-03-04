@@ -2,7 +2,7 @@
 import HtmlContent from '@/components/ui/HtmlContent'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { AboutUsSection3Item } from '@/types'
-import ResponsiveImage from './ResponsiveImage'
+import { motion } from 'motion/react'
 
 export default function CertificatesSection({
   data,
@@ -13,7 +13,6 @@ export default function CertificatesSection({
     <section className="py-4">
       {/* Header & Mission Text */}
       <div className="max-w-5xl mx-auto text-center mb-8">
-        {/* If your API sends the title "Quality and Certification" in HTML, it renders here */}
         <HtmlContent
           html={data.description || ''}
           className="text-gray-700 space-y-4"
@@ -25,18 +24,26 @@ export default function CertificatesSection({
       </div>
 
       {/* Certificate Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
         {data.items.map((item, index) => (
-          <div key={index} className="group overflow-hidden rounded border ">
-            <ResponsiveImage
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="border overflow-hidden border-slate-200 shadow-sm rounded-lg flex flex-col items-center"
+            key={index}
+          >
+            <img
               src={item.image || generatePlaceholderImage('Certificate')}
-              alt={item.title || `Certificate ${index + 1}`}
-              className="object-contain aspect-[3/4]"
+              alt={item.title || 'Certificate'}
+              className="w-full flex-1 h-auto  object-contain"
+              referrerPolicy="no-referrer"
             />
-            <p className="text-center my-2 font-bold text-lg lg:text-2xl text-blue-400">
+            <p className="text-center font-bold text-blue-900 py-2">
               {item.title}
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

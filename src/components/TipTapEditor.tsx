@@ -343,7 +343,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       <div className="prose prose-sm max-w-none">
         <EditorContent
           editor={editor}
-          className="px-3 py-2 min-h-[150px] focus:outline-none text-sm"
+          className="px-3 py-2 min-h-[150px] focus:outline-none text-sm max-h-[254px]"
           placeholder={placeholder}
         />
       </div>

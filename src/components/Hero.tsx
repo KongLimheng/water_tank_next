@@ -14,7 +14,7 @@ export const Hero: React.FC = () => {
   const [mainBanner, ...gridBanners] = settings.banners
 
   return (
-    <div className="flex flex-col gap-8 px-5 xl:px-40 mt-4">
+    <div className="flex flex-col gap-8 px-5 md:px-10 xl:px-40 mt-4">
       <AnimatedBanner banner={mainBanner} index={0} isMainHero />
 
       {gridBanners.length > 0 && (
@@ -71,14 +71,9 @@ const BannerContent = ({
 
   return (
     <div
-      className={`
-      group relative w-full overflow-hidden shadow-lg
+      className={`group relative w-full overflow-hidden shadow-lg
       transition-all duration-500 hover:shadow-primary-500/20
-      ${
-        isMainHero
-          ? 'md:rounded-2xl rounded-lg'
-          : 'aspect-square rounded md:rounded-md'
-      }
+      ${isMainHero ? 'rounded-lg' : 'aspect-square rounded md:rounded-md'}
       ${isClickable ? 'cursor-pointer' : 'cursor-default'}
     `}
       onClick={() =>

@@ -79,11 +79,10 @@ model SiteSettings {
   email       String?
   address     String?
   mapUrl      String?
-  facebookUrl String?
-  youtubeUrl  String?
   updatedAt   DateTime @updatedAt
   banners     Json?
   aboutUs     Json?
+  socials     Json?
 }
 
 model Brand {

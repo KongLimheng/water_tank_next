@@ -2,19 +2,14 @@
 
 import { getSettings } from '@/services/settingsService'
 import { SiteSettings } from '@/types'
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { createContext, ReactNode, useContext } from 'react'
 
 interface SettingsContextType {
   settings: SiteSettings | null
   isLoading: boolean
   error: Error | null
-  refetch: () => Promise<void>
+  refetch: () => void
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
@@ -22,38 +17,23 @@ const SettingsContext = createContext<SettingsContextType | undefined>(
 )
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<SiteSettings | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  const fetchSettings = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      const data = await getSettings()
-      setSettings(data)
-    } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error('Failed to fetch settings'),
-      )
-      console.error('Failed to fetch settings:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const refetch = async () => {
-    await fetchSettings()
-  }
-
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const value: SettingsContextType = {
-    settings,
+  const {
+    data: settings,
     isLoading,
     error,
+    refetch,
+  } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: getSettings,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  })
+
+  const value: SettingsContextType = {
+    settings: settings ?? null,
+    isLoading,
+    error:
+      error instanceof Error ? error : new Error('Failed to fetch settings'),
     refetch,
   }
 

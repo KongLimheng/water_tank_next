@@ -84,11 +84,10 @@ export interface SiteSettings {
   phone: string
   email: string
   address: string
-  mapUrl: string // The src attribute of the iframe
-  facebookUrl: string
-  youtubeUrl: string
+  mapUrl: string
   banners: BannerItem[]
   aboutUs: AboutUsData
+  socials: SocialItem[]
 }
 
 export interface Video {
@@ -130,7 +129,7 @@ export interface AboutUsData {
 export interface Section1 {
   image: string
   content: string
-  imageFile?: any
+  imageFile?: File
 }
 
 export interface Brand {
@@ -149,4 +148,10 @@ export interface CategoryList {
   brandId?: number | null
 
   brand?: Brand | null
+}
+
+export interface SocialItem {
+  url?: string
+  image: string
+  imageFile?: File
 }

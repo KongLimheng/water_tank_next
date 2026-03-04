@@ -124,13 +124,13 @@ function AboutUsSectionInner() {
           <h4 className="text-md font-bold text-slate-700">
             Section 1: Main Image &amp; Content
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="">
             {/* Section 1 Image */}
-            <div className="md:col-span-1">
+            <div className="">
               <label className="block text-sm font-bold text-slate-700 mb-1.5">
                 Main Image
               </label>
-              <div className="w-full h-32 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
+              <div className="w-full h-64 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                 {watchedAboutUs.section1.image ? (
                   <Image
                     src={watchedAboutUs.section1.image}
@@ -157,7 +157,7 @@ function AboutUsSectionInner() {
             </div>
 
             {/* Section 1 Content */}
-            <div className="md:col-span-2 space-y-3">
+            <div className="space-y-3">
               <label className="block text-sm font-bold text-slate-700 mb-1.5">
                 Content
               </label>
@@ -212,53 +212,58 @@ function AboutUsSectionInner() {
                       </button>
                     )}
                   </div>
-
-                  {/* Item Image */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                      Product Image
-                    </label>
-                    <div className="w-full h-32 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
-                      {watchedItem?.image ? (
-                        <img
-                          src={watchedItem.image}
-                          alt={`Item ${itemIndex + 1}`}
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-slate-400">
-                          <ImageIcon size={24} />
-                        </div>
-                      )}
-                      <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium">
-                        <UploadCloud size={20} className="mb-1" />
-                        <span>Upload</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleSection2ImageChange(itemIndex, e.target.files)
-                          }
-                        />
-                      </label>
+                  <div className="flex gap-4">
+                    {/* Item Image */}
+                    <div className="">
+                      <span className="block text-sm font-bold text-slate-700 mb-1.5">
+                        Product Image
+                      </span>
+                      <div className="w-64 aspect-square bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
+                        {watchedItem?.image ? (
+                          <Image
+                            src={watchedItem.image}
+                            alt={`Item ${itemIndex + 1}`}
+                            className="size-full object-cover"
+                            fill
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-slate-400">
+                            <ImageIcon size={24} />
+                          </div>
+                        )}
+                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium">
+                          <UploadCloud size={20} className="mb-1" />
+                          <span>Upload</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSection2ImageChange(
+                                itemIndex,
+                                e.target.files,
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Item Content */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                      Content (Rich Text)
-                    </label>
-                    <TipTapEditor
-                      value={watchedItem?.content || ''}
-                      onChange={(content) =>
-                        setValue(
-                          `aboutUs.section2.${itemIndex}.content`,
-                          content,
-                        )
-                      }
-                    />
+                    {/* Item Content */}
+                    <div className="flex-1">
+                      <span className="block text-sm font-bold text-slate-700 mb-1.5">
+                        Content
+                      </span>
+                      <TipTapEditor
+                        value={watchedItem?.content || ''}
+                        onChange={(content) =>
+                          setValue(
+                            `aboutUs.section2.${itemIndex}.content`,
+                            content,
+                          )
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               )
@@ -333,56 +338,61 @@ function AboutUsSectionInner() {
                     )}
                   </div>
 
-                  {/* Item Image */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                      Image
-                    </label>
-                    <div className="w-full h-32 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
-                      {watchedItem?.image ? (
-                        <Image
-                          src={watchedItem.image}
-                          alt={`Certificate ${itemIndex + 1}`}
-                          className="size-full object-contain"
-                          fill
-                          sizes="10"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-slate-400">
-                          <ImageIcon size={24} />
-                        </div>
-                      )}
-                      <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium">
-                        <UploadCloud size={20} className="mb-1" />
-                        <span>Upload</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleSection3ImageChange(itemIndex, e.target.files)
-                          }
-                        />
+                  <div className="flex gap-4">
+                    {/* Item Image */}
+                    <div className="w-1/3">
+                      <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                        Image
                       </label>
+                      <div className="w-full h-64 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
+                        {watchedItem?.image ? (
+                          <Image
+                            src={watchedItem.image}
+                            alt={`Certificate ${itemIndex + 1}`}
+                            className="size-full object-contain"
+                            fill
+                            sizes="10"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-slate-400">
+                            <ImageIcon size={24} />
+                          </div>
+                        )}
+                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium">
+                          <UploadCloud size={20} className="mb-1" />
+                          <span>Upload</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSection3ImageChange(
+                                itemIndex,
+                                e.target.files,
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Item Content */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent text-sm"
-                      value={watchedItem?.title || ''}
-                      onChange={(e) =>
-                        setValue(
-                          `aboutUs.section3.items.${itemIndex}.title`,
-                          e.target.value,
-                        )
-                      }
-                    />
+                    {/* Item Content */}
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent text-sm"
+                        value={watchedItem?.title || ''}
+                        onChange={(e) =>
+                          setValue(
+                            `aboutUs.section3.items.${itemIndex}.title`,
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               )
