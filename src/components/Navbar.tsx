@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import Logo from '../../public/logo.jpg' // Check path
+import SearchBox from './SearchBox'
 
 const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -104,6 +105,11 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
 
+          {/* Desktop Search Box */}
+          <div className="hidden md:block w-72 lg:w-96">
+            <SearchBox />
+          </div>
+
           <button
             className="md:hidden p-2 text-slate-600"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -117,6 +123,11 @@ const Navbar: React.FC = () => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-100 bg-white">
           <div className="px-4 py-4 space-y-2">
+            {/* Mobile Search Box */}
+            <div className="pb-3 border-b border-slate-100 mb-3">
+              <SearchBox />
+            </div>
+
             <Link
               href="/"
               className={`block text-sm font-medium transition-colors hover:text-primary-600 ${

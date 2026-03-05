@@ -1,16 +1,16 @@
+import { generatePlaceholderImage } from '@/lib/placeholderImage'
+import { ProductList } from '@/types'
 import { Package } from 'lucide-react'
+import Image from 'next/image'
 import React, { useMemo } from 'react'
-import { Category, ProductList } from '../../types'
 
 interface PriceListViewProps {
   products: ProductList[]
-  category: Category
   onProductClick: (product: ProductList) => void
 }
 
 export const PriceListView: React.FC<PriceListViewProps> = ({
   products,
-  category,
   onProductClick,
 }) => {
   // 1. Grouping Logic
@@ -77,7 +77,6 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
     return groups
   }, [products])
 
-
   // Helper to render sections only if they have data
   const renderSection = (type: string, isOther = false) => {
     const group = groupedData[type]
@@ -106,7 +105,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
           <div className="flex-1 w-full">
             <PriceTable
               items={group.vertical}
-              title="Vertical Tanks"
+              title="ធុងឈរ (Vertical Tanks)"
               subtitle=""
               onRowClick={onProductClick}
               isHorizontal={false}
@@ -131,7 +130,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
           <div className="flex-1 w-full min-w-0">
             <PriceTable
               items={group.horizontal}
-              title="Horizontal Tanks"
+              title="ធុងទឹកផ្តេក (Horizontal Tanks)"
               subtitle=""
               onRowClick={onProductClick}
               isHorizontal={true}
@@ -148,17 +147,18 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
   return (
     <div className="max-w-full rounded-lg mx-auto p-2 md:p-8 bg-slate-200/30 min-h-screen font-sans">
       {/* Page Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-2xl md:text-5xl font-bold text-blue-900 mb-4 font-khmer tracking-tight">
-          {category.title || "តារាងតម្លៃធុងទឹក (Price List)"}
-        </h1>
-        <div className="flex flex-col items-center gap-1">
-          <div className="h-1.5 w-64 bg-red-600"></div>
-          <div className="h-0.5 w-48 bg-red-600"></div>
-        </div>
-        <p className="mt-4 text-red-600 font-bold text-sm md:text-xl uppercase tracking-widest">
-          Official Factory Price • 01 - 04 - 2025
-        </p>
+      <div className="flex justify-center pb-8 relative">
+        <Image
+          src={
+            products[0]?.category.priceBanner ||
+            generatePlaceholderImage(products[0]?.category.name || 'Water Tank')
+          }
+          alt="Product"
+          className="w-2/3 h-auto object-contain rounded"
+          width={1920}
+          height={440}
+          loading="eager"
+        />
       </div>
 
       {/* Content Area */}
@@ -223,6 +223,9 @@ const PriceTable = ({
 
   return (
     <div className="border border-slate-400 h-full flex flex-col relative">
+      <div className="text-center font-bold text-blue-900 bg-slate-50 py-2 border-b-2 border-slate-400">
+        {title}
+      </div>
       {/* Table Header */}
       <div
         className="text-center font-bold border-b-2 border-slate-400 bg-slate-50"

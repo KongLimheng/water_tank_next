@@ -9,8 +9,7 @@
     "lint": "next lint",
     "db:push": "npx prisma db push",
     "db:generate": "prisma generate",
-    "db:seed": "node prisma/seed.js",
-    "prepare": "husky"
+    "db:seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -47,7 +46,6 @@
     "autoprefixer": "^10.4.23",
     "eslint": "^9.0.0",
     "eslint-config-next": "latest",
-    "husky": "^9.1.7",
     "postcss": "^8.5.6",
     "prisma": "^7.2.0",
     "tailwindcss": "^3.4.19",

@@ -71,6 +71,7 @@ model Category {
   brandId     Int?
   brand       Brand?    @relation(fields: [brandId], references: [id])
   products    Product[]
+  priceBanner String?
 }
 
 model SiteSettings {

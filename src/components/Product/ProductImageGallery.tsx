@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import Image from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
 import '../../styles/image-skeleton.css'
 
@@ -121,7 +122,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             <button
               key={index}
               onClick={() => handleImageSelect(img, index)}
-              className={`border-2 rounded-xl p-1 ${
+              className={`border-2 rounded-md p-1 ${
                 selectedImage === img ? 'border-indigo-600' : 'border-gray-200'
               }`}
             >
@@ -131,11 +132,12 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 loading="lazy"
                 className="size-20 object-contain rounded-lg"
               /> */}
-              <img
+              <Image
                 src={img}
                 alt={`${name} ${index}`}
-                className="size-20 object-contain rounded-lg"
-                loading="lazy"
+                className="size-20 object-contain rounded"
+                width={80}
+                height={80}
                 onLoad={() => setImageLoaded(true)}
                 onError={(e) =>
                   ((e.target as HTMLImageElement).src = selectedImage)

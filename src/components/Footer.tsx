@@ -51,9 +51,8 @@ export default function Footer() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-start gap-6 mt-4">
+              <div className="flex items-start gap-4 mt-4">
                 {/* Social Icons */}
-
                 {settings.socials &&
                   settings.socials.map((social, index) => {
                     return (
