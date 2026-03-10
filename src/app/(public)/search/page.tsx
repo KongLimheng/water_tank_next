@@ -1,7 +1,12 @@
-'use client';
+'use client'
 
-import SearchResults from '@/pages/SearchResults';
+import SearchResults from '@/pages/SearchResults'
+import { Suspense } from 'react'
 
 export default function SearchPage() {
-  return <SearchResults />;
+  return (
+    <Suspense fallback={<div></div>}>
+      <SearchResults />
+    </Suspense>
+  )
 }
