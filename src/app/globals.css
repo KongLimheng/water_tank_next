@@ -13,3 +13,98 @@ body {
   background: white;
   min-height: 100vh;
 }
+
+img {
+  color-interpolation-filters: sRGB;
+  -webkit-font-smoothing: antialiased;
+}
+/* TipTap Editor Styles */
+.prose {
+  --tw-prose-body: #1f2937;
+  --tw-prose-headings: #111827;
+  --tw-prose-lead: #4b5563;
+  --tw-prose-links: #0ea5e9;
+  --tw-prose-bold: #111827;
+  --tw-prose-counters: #6b7280;
+  --tw-prose-bullets: #d1d5db;
+  --tw-prose-hr: #e5e7eb;
+  --tw-prose-quotes: #111827;
+  --tw-prose-quote-borders: #e5e7eb;
+  --tw-prose-captions: #6b7280;
+  --tw-prose-code: #111827;
+  --tw-prose-pre-code: #e5e7eb;
+  --tw-prose-pre-bg: #1f2937;
+  --tw-prose-th-borders: #d1d5db;
+  --tw-prose-td-borders: #e5e7eb;
+}
+
+.prose-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.prose-sm > :first-child {
+  margin-top: 0;
+}
+
+.prose-sm > :last-child {
+  margin-bottom: 0;
+}
+
+.prose-sm p {
+  margin: 0.75rem 0;
+}
+
+.prose-sm h1,
+.prose-sm h2,
+.prose-sm h3 {
+  margin: 1rem 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.prose-sm h1 {
+  font-size: 1.5rem;
+}
+
+.prose-sm h2 {
+  font-size: 1.25rem;
+}
+
+.prose-sm h3 {
+  font-size: 1.1rem;
+}
+
+.prose-sm ul,
+.prose-sm ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose-sm li {
+  margin: 0.25rem 0;
+}
+
+.prose-sm a {
+  color: var(--tw-prose-links);
+  text-decoration: underline;
+}
+
+.prose-sm strong {
+  font-weight: 600;
+  color: var(--tw-prose-bold);
+}
+
+.prose-sm em {
+  font-style: italic;
+}
+
+/* Remove default focus outline from TipTap/ProseMirror editor */
+.ProseMirror:focus {
+  outline: none !important;
+}
+
+.ProseMirror {
+  /* Ensure the editor takes full width and has a minimum height */
+  width: 100%;
+  min-height: 150px;
+}

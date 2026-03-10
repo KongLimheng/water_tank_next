@@ -55,15 +55,9 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
 
               <div className="">
-                {displayPrice === 0 ? (
-                  <p className="sm:text-xl md:text-2xl font-bold text-primary-600 mb-2">
-                    សាកសួរ
-                  </p>
-                ) : (
-                  <p className="sm:text-xl md:text-2xl font-bold text-primary-600 mb-2">
-                    ${displayPrice.toFixed(2)}
-                  </p>
-                )}
+                <p className="sm:text-xl md:text-2xl font-bold text-primary-600 mb-2">
+                  {product.price ? `$${product.price.toFixed(2)}` : 'សាកសួរ'}
+                </p>
                 <p className="text-slate-600 leading-relaxed">
                   {product.description}
                 </p>

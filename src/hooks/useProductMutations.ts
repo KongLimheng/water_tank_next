@@ -11,6 +11,7 @@ export const useProductMutations = () => {
 
   const onSuccess = (msg: string) => {
     queryClient.invalidateQueries({ queryKey: ['products'] })
+    toast.success(msg)
   }
 
   const onError = (error: any) => {

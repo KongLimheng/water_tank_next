@@ -1,5 +1,7 @@
 'use client'
 
+import { getProducts } from '@/services/productService'
+import { useQuery } from '@tanstack/react-query'
 import {
   Box,
   ChevronRight,
@@ -10,39 +12,47 @@ import {
   Settings,
   Tag,
 } from 'lucide-react'
+import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react'
-import Logo from '../../public/logo.jpg' // Assuming this works if Next handles image imports or use string path
-import { getCurrentUser, logout } from '../services/authService'
-import { ProductList } from '../types'
+import Logo from '../../public/logo.jpg'
 import MenuSection from './MenuSection'
+
+interface User {
+  id: string
+  email: string
+  name: string
+  role: string
+}
 
 const ProductView = lazy(() =>
   import('./views/ProductView').then((module) => ({
     default: module.ProductView,
   })),
 )
+
 const CategoryView = lazy(() =>
   import('./views/CategoryView').then((module) => ({
     default: module.CategoryView,
   })),
 )
+
 const SettingsView = lazy(() =>
   import('./views/SettingsView').then((module) => ({
     default: module.SettingsView,
   })),
 )
+
 const VideoView = lazy(() =>
   import('./views/VideoView').then((module) => ({ default: module.VideoView })),
 )
 
 interface AdminDashboardProps {
-  products: ProductList[]
+  user: User
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const router = useRouter()
-  const [user, setUser] = useState(getCurrentUser())
 
   // Dashboard State
   const [activeTab, setActiveTab] = useState('products')
@@ -80,12 +90,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
     router.push('/')
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await signOut({ redirect: true, callbackUrl: '/login' })
     onExit()
   }
 
-  if (!user) return null
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products', 'all'],
+    queryFn: getProducts,
+    enabled: user !== null,
+  })
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3 text-slate-400">
+          <Loader2 className="animate-spin w-8 h-8" />
+          <span className="text-sm font-medium">Loading...</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">

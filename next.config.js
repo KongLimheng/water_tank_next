@@ -9,6 +9,7 @@ const nextConfig = {
   // Disable source maps in production
   productionBrowserSourceMaps: false,
   images: {
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: 'https',

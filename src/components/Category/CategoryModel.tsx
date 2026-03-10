@@ -1,7 +1,7 @@
 import { useCategoryMutations } from '@/hooks/useCategoryMutations'
 import { Brand } from '@/services/brandService'
 import { Category } from '@/types'
-import { Camera, Upload, X } from 'lucide-react'
+import { Camera, ImageIcon, Upload, UploadCloud, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
@@ -28,12 +28,17 @@ export const CategoryModal: React.FC<{
 
   const { addCategory, updateCategory, isSaving } = useCategoryMutations()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(
+    null,
+  )
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewBannerUrl, setPreviewBannerUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen) {
       // Reset Image State
       setSelectedFile(null)
+      setSelectedBannerFile(null)
 
       if (category) {
         reset({
@@ -42,9 +47,11 @@ export const CategoryModal: React.FC<{
           brandId: category.brandId?.toString() || '',
         })
         setPreviewUrl(category.image || null)
+        setPreviewBannerUrl(category.priceBanner || null)
       } else {
         reset({ name: '', displayName: '', brandId: '' })
         setPreviewUrl(null)
+        setPreviewBannerUrl(null)
       }
     }
   }, [isOpen, category, reset])
@@ -56,6 +63,15 @@ export const CategoryModal: React.FC<{
       setPreviewUrl(URL.createObjectURL(file))
     }
   }
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setSelectedBannerFile(file)
+      setPreviewBannerUrl(URL.createObjectURL(file))
+    }
+  }
+
   const onSubmit: SubmitHandler<CategoryFormValues> = (data) => {
     // 3. Construct FormData
     const formData = new FormData()
@@ -68,6 +84,10 @@ export const CategoryModal: React.FC<{
 
     if (selectedFile) {
       formData.append('image', selectedFile)
+    }
+
+    if (selectedBannerFile) {
+      formData.append('priceBanner', selectedBannerFile)
     }
 
     const options = {
@@ -142,6 +162,7 @@ export const CategoryModal: React.FC<{
                     accept="image/*"
                     className="hidden"
                     onChange={handleFileChange}
+                    name="image"
                   />
                 </label>
               </div>
@@ -189,6 +210,35 @@ export const CategoryModal: React.FC<{
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="w-full h-40 shrink-0 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
+              {previewBannerUrl ? (
+                <Image
+                  src={previewBannerUrl}
+                  alt="Price Banner"
+                  className="size-full object-cover"
+                  fill
+                  loading="lazy"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-400">
+                  <ImageIcon size={24} />
+                </div>
+              )}
+
+              {/* Hidden File Input + Overlay Label */}
+              <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium">
+                <UploadCloud size={20} className="mb-1" />
+                <span>Change 700x250</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleBannerChange}
+                  name="priceBanner"
+                />
+              </label>
             </div>
 
             <div className="pt-4 flex justify-end gap-2">

@@ -1,9 +1,39 @@
 import { saveFile } from '@/lib/fileUpload';
 import { prisma } from '@/lib/prismaClient';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const searchParams = req.nextUrl.searchParams;
+    const query = searchParams.get('q');
+
+    // If search query is provided, perform search
+    if (query) {
+      const products = await prisma.product.findMany({
+        where: {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { description: { contains: query, mode: 'insensitive' } },
+            { type: { contains: query, mode: 'insensitive' } },
+            { brand: { contains: query, mode: 'insensitive' } },
+          ],
+        },
+        include: {
+          variants: true,
+          category: {
+            include: {
+              brand: true,
+            },
+          },
+        },
+        orderBy: { id: 'desc' },
+        take: 20, // Limit search results
+      });
+
+      return NextResponse.json(products);
+    }
+
+    // Default: fetch all products
     const products = await prisma.product.findMany({
       include: {
         variants: true,

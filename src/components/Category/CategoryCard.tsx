@@ -1,6 +1,7 @@
+import { Category } from '@/types'
 import { ArrowRight, Image as ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { Category } from '../../types'
 
 interface CategoryCardProps {
   category: Category
@@ -18,11 +19,13 @@ const CategoryCard = ({ category }: CategoryCardProps) => {
       {/* Image Section */}
       <div className="relative h-64 w-full overflow-hidden bg-slate-50 flex items-center justify-center">
         {hasImage ? (
-          <img
+          <Image
             src={category.image!} // Ensure this path matches your server static serve
             alt={category.name}
             className="size-full object-contain transition-transform duration-700 group-hover:scale-110"
-            loading="lazy"
+            loading="eager"
+            width={400}
+            height={400}
           />
         ) : (
           <div className="size-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400">

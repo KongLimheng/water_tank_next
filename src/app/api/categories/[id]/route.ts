@@ -1,9 +1,7 @@
 import { cleanImage } from '@/lib/cleanImage'
 import { saveFile } from '@/lib/fileUpload'
 import { prisma } from '@/lib/prismaClient'
-import { unlink } from 'fs/promises'
 import { NextResponse } from 'next/server'
-import path from 'path'
 import slugify from 'slugify'
 
 export async function GET(
@@ -31,7 +29,6 @@ export async function PUT(
 
     const formData = await req.formData()
     const name = formData.get('name') as string
-    const title = formData.get('title') as string
     const displayName = (formData.get('displayName') as string) || null
     const uploadType = (formData.get('uploadType') as string) || 'categories'
     const brandIdRaw = formData.get('brandId') as string
@@ -86,34 +83,45 @@ export async function PUT(
       imageUrl = await saveFile(imageFile, uploadType)
     }
 
+    let priceBannerUrl: string | null = null
+    const bannerFile = formData.get('priceBanner')
+    if (bannerFile instanceof File) {
+      priceBannerUrl = await saveFile(bannerFile, 'category-banners')
+    }
+
     const updatedCategory = await prisma.category.update({
       where: { id: Number(idString) },
       data: {
         name,
         slug,
         brandId,
-        title,
         displayName,
-        image: imageUrl,
+        image: imageUrl || currentCategory.image,
+        priceBanner: priceBannerUrl || currentCategory.priceBanner,
       },
       include: { brand: true },
     })
 
-    if (currentCategory.image && currentCategory.image !== imageUrl) {
-      try {
-        const urlParts = currentCategory.image.split('/')
-        const filename = urlParts[urlParts.length - 1]
-        const filePath = path.join(
-          process.cwd(),
-          'public',
-          'uploads',
-          'categories',
-          filename,
-        )
-        await unlink(filePath).catch(() => {})
-      } catch (e) {
+    if (
+      currentCategory.image &&
+      currentCategory.image !== imageUrl &&
+      imageUrl
+    ) {
+      await cleanImage(currentCategory.image, 'categories').catch((e) => {
         console.error('Error deleting orphan image', e)
-      }
+      })
+    }
+
+    if (
+      currentCategory.priceBanner &&
+      currentCategory.priceBanner !== priceBannerUrl &&
+      priceBannerUrl
+    ) {
+      await cleanImage(currentCategory.priceBanner, 'category-banners').catch(
+        (e) => {
+          console.error('Error deleting orphan price banner', e)
+        },
+      )
     }
 
     return NextResponse.json(updatedCategory)

@@ -1,15 +1,12 @@
-'use client';
+'use client'
 
-import { useQuery } from '@tanstack/react-query';
-import { Facebook } from 'lucide-react';
-import { getSettings } from '../services/settingsService';
+import { useSettings } from '@/contexts/SettingsContext'
+import { generatePlaceholderImage } from '@/lib/placeholderImage'
+import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 export default function Footer() {
-  const { data: settings, isLoading: isSettingsLoading } = useQuery({
-    queryKey: ['site-settings'],
-    queryFn: getSettings,
-    staleTime: 1000 * 60 * 60,
-  });
+  const { settings, isLoading: isSettingsLoading } = useSettings()
 
   return (
     <footer className="pt-10 pb-8 text-black font-sans">
@@ -26,7 +23,7 @@ export default function Footer() {
           </div>
         ) : settings ? (
           <>
-            <div className="mb-8 ">
+            <div className="mb-8">
               <h3 className="text-xl md:text-2xl xl:text-4xl font-bold mb-6 font-khmer">
                 លោកអ្នកអាចទំនាក់ទំនងយើងតាមរយៈ៖
               </h3>
@@ -50,57 +47,66 @@ export default function Footer() {
                 </div>
                 <div className="text-sm md:text-lg xl:text-2xl flex items-start gap-2">
                   <span className="font-bold min-w-[120px]">អាស័យដ្ឋាន:</span>
-                  <span className='' >{settings.address}</span>
+                  <span className="">{settings.address}</span>
                 </div>
+              </div>
+
+              <div className="flex items-start gap-4 mt-4">
+                {/* Social Icons */}
+                {settings.socials &&
+                  settings.socials.map((social, index) => {
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          'rounded-full overflow-hidden size-10 relative',
+                          social.url ? 'cursor-pointer' : '',
+                        )}
+                        onClick={() => {
+                          if (social.url) {
+                            window.open(social.url, '_blank')
+                          }
+                        }}
+                      >
+                        <Image
+                          src={
+                            social.image ||
+                            generatePlaceholderImage(`Social ${index + 1}`)
+                          }
+                          alt={social.url || `Social Icon ${index + 1}`}
+                          fill
+                          className="size-full object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    )
+                  })}
               </div>
             </div>
 
             {/* Map Section */}
-            <div className="w-full h-[350px] bg-slate-800 rounded-lg overflow-hidden border border-slate-800 mb-8 relative">
-              <iframe
-                src={settings.mapUrl}
-                width="100%"
-                height="100%"
-                style={{
-                  border: 0,
-                  filter: 'invert(90%) hue-rotate(180deg) contrast(90%)',
-                }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="w-full h-full"
-                title="H2O Location"
-              ></iframe>
-              <div className="absolute inset-0 bg-blue-900/10 pointer-events-none mix-blend-overlay"></div>
-            </div>
-
-            {/* Bottom Section */}
-            <div className="flex flex-col items-center gap-6 mt-8">
-              {/* Social Icons */}
-              <div className="flex gap-4">
-                {settings.facebookUrl && (
-                  <a
-                    href={settings.facebookUrl}
-                    className="bg-[#1877F2] p-2 rounded text-white hover:opacity-90 transition-opacity transform hover:scale-105"
-                  >
-                    <Facebook
-                      size={24}
-                      fill="white"
-                      className="stroke-none"
-                    />
-                  </a>
-                )}
+            {settings.mapUrl && (
+              <div className="w-full h-[350px] bg-slate-800 rounded-lg overflow-hidden border border-slate-800 mb-8 relative">
+                <iframe
+                  src={settings.mapUrl}
+                  width="100%"
+                  height="100%"
+                  style={{
+                    border: 0,
+                    filter: 'invert(90%) hue-rotate(180deg) contrast(90%)',
+                  }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="w-full h-full"
+                  title="H2O Location"
+                ></iframe>
+                <div className="absolute inset-0 bg-blue-900/10 pointer-events-none mix-blend-overlay"></div>
               </div>
-
-              <div className="text-center space-y-2">
-                <p className="text-slate-300 font-medium text-sm md:text-base">
-                  {settings.address}
-                </p>
-              </div>
-            </div>
+            )}
           </>
         ) : null}
       </div>
     </footer>
-  );
+  )
 }

@@ -3,7 +3,6 @@ import { Category, ProductList } from '@/types'
 import { Plus, Save, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
 import ImageDragDrop from '../ImageDragDrop'
 
 interface ProductFormValues {
@@ -196,16 +195,10 @@ export const ProductModal: React.FC<{
 
     const mutationOptions = {
       onSuccess: () => {
-        toast.success(
-          product
-            ? 'Product updated successfully'
-            : 'Product created successfully',
-        )
         onClose()
       },
       onError: (error: any) => {
         console.error(error)
-        toast.error(error.message || 'Failed to save product')
       },
     }
 

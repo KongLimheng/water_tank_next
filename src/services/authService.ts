@@ -1,33 +1,32 @@
-import { api } from './apiInstance'
+import { signIn, signOut } from 'next-auth/react'
 
-interface User {
-  id: number
-  username: string
-  role: string
+export interface User {
+  id: string
   email: string
+  name: string
+  role: string
 }
 
-const USER_KEY = 'h2o_active_user'
+export const login = async (email: string, password: string) => {
+  const result = await signIn('credentials', {
+    email,
+    password,
+    redirect: false,
+  })
 
-export const login = async (username: string, password: string) => {
-  const response = await api.post(`/login`, { username, password })
-  localStorage.setItem(USER_KEY, JSON.stringify(response.data.user))
-  return response.data.user
-}
-
-export const logout = (): void => {
-  localStorage.removeItem(USER_KEY)
-}
-
-export const getCurrentUser = (): User | null => {
-  try {
-    const stored = localStorage.getItem(USER_KEY)
-    return stored ? JSON.parse(stored) : null
-  } catch (e) {
-    return null
+  if (result?.error) {
+    throw new Error(result.error)
   }
+
+  return result
 }
 
-export const isAuthenticated = (): boolean => {
-  return !!getCurrentUser()
+export const logout = async (callbackUrl?: string) => {
+  await signOut({ redirect: true, callbackUrl: callbackUrl || '/login' })
+}
+
+export const isAuthenticated = async () => {
+  const response = await fetch('/api/auth/session')
+  const session = await response.json()
+  return !!session?.user
 }

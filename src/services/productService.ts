@@ -8,6 +8,14 @@ export const getProducts = cache(async (): Promise<ProductList[]> => {
   return data || []
 })
 
+export const searchProducts = async (query: string): Promise<ProductList[]> => {
+  if (!query || !query.trim()) {
+    return []
+  }
+  const { data } = await api.get<ProductList[]>(`/products?q=${encodeURIComponent(query.trim())}`)
+  return data || []
+}
+
 export const getProductsByBrandCategory = async (
   category: string,
 ): Promise<ProductList[]> => {

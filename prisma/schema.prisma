@@ -71,6 +71,7 @@ model Category {
   brandId     Int?
   brand       Brand?    @relation(fields: [brandId], references: [id])
   products    Product[]
+  priceBanner String?
 }
 
 model SiteSettings {
@@ -79,10 +80,10 @@ model SiteSettings {
   email       String?
   address     String?
   mapUrl      String?
-  facebookUrl String?
-  youtubeUrl  String?
   updatedAt   DateTime @updatedAt
   banners     Json?
+  aboutUs     Json?
+  socials     Json?
 }
 
 model Brand {
