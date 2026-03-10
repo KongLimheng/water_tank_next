@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import React, { useState } from 'react'
 import { generatePlaceholderImage } from '../../lib/placeholderImage'
 import { ProductList } from '../../types'
@@ -16,10 +17,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
       onMouseLeave={() => setDisplayImage(product.image)} // Reset on mouse leave
     >
       <div className="relative h-64 xl:h-96 overflow-hidden bg-slate-50 flex items-center justify-center">
-        <img
+        <Image
           src={displayImage[0] || generatePlaceholderImage(product.name)}
           alt={product.name}
           className="w-100 h-full object-contain transform group-hover:scale-110 transition-transform duration-700"
+          loading="eager"
+          width={400}
+          height={400}
         />
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <span className="bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-slate-800 shadow-sm capitalize">

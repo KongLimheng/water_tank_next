@@ -98,16 +98,13 @@ function AboutUsSectionInner() {
   // Add / Remove Section 3 items
   const addSection3Item = () => {
     appendSection3({ title: '', image: '' })
-    toast.success('New certificate added to section 3')
   }
 
   const removeSection3Item = (index: number) => {
     if (section3Fields.length === 1) {
-      toast.warning('At least one certificate is required in section 3')
       return
     }
     removeSection3(index)
-    toast.success('Certificate removed')
   }
 
   return (
@@ -212,7 +209,7 @@ function AboutUsSectionInner() {
                       </button>
                     )}
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 md:flex-row flex-col">
                     {/* Item Image */}
                     <div className="">
                       <span className="block text-sm font-bold text-slate-700 mb-1.5">
@@ -285,20 +282,11 @@ function AboutUsSectionInner() {
         </div>
 
         {/* === SECTION 3: Items Array === */}
-        <div className="space-y-4 border-t border-slate-200 pt-6">
+        <div className="space-y-4 border-t border-slate-200 pt-6 flex flex-col">
           <div className="flex justify-between items-center">
             <h4 className="text-md font-bold text-slate-700">
               Section 3: Quality & Certificates Gallery
             </h4>
-            {section3Fields.length < 10 && (
-              <button
-                type="button"
-                onClick={addSection3Item}
-                className="text-xs font-bold text-primary-600 flex items-center gap-1 hover:underline"
-              >
-                <Plus size={14} /> Add Item
-              </button>
-            )}
           </div>
 
           <div>
@@ -313,7 +301,7 @@ function AboutUsSectionInner() {
             />
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-4">
             {section3Fields.map((field, itemIndex) => {
               const watchedItem = watch(`aboutUs.section3.items.${itemIndex}`)
 
@@ -338,13 +326,13 @@ function AboutUsSectionInner() {
                     )}
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex flex-col gap-4">
                     {/* Item Image */}
-                    <div className="w-1/3">
+                    <div className="">
                       <label className="block text-sm font-bold text-slate-700 mb-1.5">
                         Image
                       </label>
-                      <div className="w-full h-64 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
+                      <div className="w-full h-80 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                         {watchedItem?.image ? (
                           <Image
                             src={watchedItem.image}
@@ -398,6 +386,16 @@ function AboutUsSectionInner() {
               )
             })}
           </div>
+
+          {section3Fields.length < 10 && (
+            <button
+              type="button"
+              onClick={addSection3Item}
+              className="text-xs justify-end font-bold text-primary-600 flex items-center gap-1 hover:underline"
+            >
+              <Plus size={14} /> Add Certificate
+            </button>
+          )}
 
           {section3Fields.length === 0 && (
             <div className="text-center py-8 bg-white rounded-lg border border-dashed border-slate-300 text-slate-400">

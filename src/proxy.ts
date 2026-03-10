@@ -9,11 +9,13 @@ export async function proxy(request: NextRequest) {
   const session = await auth()
   const pathname = request.nextUrl.pathname
 
+  console.log(pathname, '<><>')
+
   // Check if route requires authentication
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
     if (!session?.user) {
       const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('callbackUrl', encodeURIComponent(pathname))
+      loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }
 

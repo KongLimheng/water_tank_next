@@ -1,6 +1,6 @@
 'use client'
 
-import { MenuIcon, PlaySquare } from 'lucide-react'
+import { MenuIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -12,9 +12,16 @@ const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
+  const navLinks = [
+    { href: '/', label: 'Home', exact: true },
+    { href: '/products', label: 'Product', exact: false },
+    { href: '/about', label: 'About Us', exact: true },
+    { href: '/videos', label: 'Video Guide', exact: true },
+  ]
+
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      if (window.innerWidth < 886) {
         setMobileMenuOpen(false) // Mobile: Auto close
       } else {
         setMobileMenuOpen(true) // Desktop: Auto open
@@ -35,7 +42,7 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-2">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 cursor-pointer">
@@ -49,65 +56,37 @@ const Navbar: React.FC = () => {
                 height={40}
               />
             </div>
-            <div>
-              <h1 className="text-sm md:text-lg font-bold text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-xs lg:text-lg font-bold text-slate-900 tracking-tight truncate">
                 Fa De Manufacture Co., LTD.
               </h1>
-              <p className="text-[8px] md:text-[10px] text-slate-500 font-medium uppercase">
+              <p className="text-[8px] lg:text-[10px] text-slate-500 font-medium">
                 ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ
               </p>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-0 lg:gap-6">
             {/* Home Link */}
-            <Link
-              href="/"
-              className={`text-sm font-medium transition-colors hover:text-primary-600 ${
-                isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
-              }`}
-            >
-              Home
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-2 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-all hover:bg-primary-50 hover:text-primary-600 ${
+                  isActiveExact(link.href)
+                    ? 'text-primary-600 bg-primary-50'
+                    : 'text-slate-600'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
 
-            <Link
-              href="/products"
-              className={`text-sm font-medium transition-colors hover:text-primary-600  py-2 px-2 rounded-xl ${
-                isActiveExact('/products') || isActiveExact('/shop')
-                  ? 'text-primary-600 '
-                  : 'text-slate-600'
-              }`}
-            >
-              Product
-            </Link>
-
-            {/* About Us Link */}
-            <Link
-              href="/about"
-              className={`text-sm font-medium transition-colors hover:text-primary-600 ${
-                pathname === '/about' ? 'text-primary-600 ' : 'text-slate-600'
-              }`}
-            >
-              About Us
-            </Link>
-
-            {/* Video Guide Link */}
-            <Link
-              href="/videos"
-              className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary-600 ${
-                isActiveExact('/videos')
-                  ? 'text-primary-600 '
-                  : 'text-slate-600'
-              }`}
-            >
-              <PlaySquare size={16} /> Video Guide
-            </Link>
-          </div>
-
-          {/* Desktop Search Box */}
-          <div className="hidden md:block w-72 lg:w-96">
-            <SearchBox />
+            {/* Desktop Search Box */}
+            <div className="hidden md:block w-48 lg:w-56">
+              <SearchBox />
+            </div>
           </div>
 
           <button
@@ -125,7 +104,7 @@ const Navbar: React.FC = () => {
           <div className="px-4 py-4 space-y-2">
             {/* Mobile Search Box */}
             <div className="pb-3 border-b border-slate-100 mb-3">
-              <SearchBox />
+              <SearchBox setMobileMenu={setMobileMenuOpen} />
             </div>
 
             <Link

@@ -30,16 +30,19 @@ const ProductView = lazy(() =>
     default: module.ProductView,
   })),
 )
+
 const CategoryView = lazy(() =>
   import('./views/CategoryView').then((module) => ({
     default: module.CategoryView,
   })),
 )
+
 const SettingsView = lazy(() =>
   import('./views/SettingsView').then((module) => ({
     default: module.SettingsView,
   })),
 )
+
 const VideoView = lazy(() =>
   import('./views/VideoView').then((module) => ({ default: module.VideoView })),
 )

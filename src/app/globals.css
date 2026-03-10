@@ -97,3 +97,14 @@ img {
 .prose-sm em {
   font-style: italic;
 }
+
+/* Remove default focus outline from TipTap/ProseMirror editor */
+.ProseMirror:focus {
+  outline: none !important;
+}
+
+.ProseMirror {
+  /* Ensure the editor takes full width and has a minimum height */
+  width: 100%;
+  min-height: 150px;
+}

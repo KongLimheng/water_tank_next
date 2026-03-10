@@ -1,14 +1,14 @@
 'use client'
 
+import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Search } from 'lucide-react'
 import Image from 'next/image'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import ProductDetailsModal from '../components/Product/ProductDetailsModal'
 import { searchProducts } from '../services/productService'
 import { ProductList } from '../types'
-import { generatePlaceholderImage } from '@/lib/placeholderImage'
 
 const SearchResults = () => {
   const searchParams = useSearchParams()
@@ -50,7 +50,8 @@ const SearchResults = () => {
               )}
             </p>
             <div className="text-sm text-slate-400 font-medium">
-              {visibleProducts.length} result{visibleProducts.length !== 1 ? 's' : ''} found
+              {visibleProducts.length} result
+              {visibleProducts.length !== 1 ? 's' : ''} found
             </div>
           </div>
         </div>
@@ -75,8 +76,9 @@ const SearchResults = () => {
                       product.image[0] || generatePlaceholderImage(product.name)
                     }
                     alt={product.name}
-                    fill
-                    className="object-contain group-hover:scale-105 transition-transform duration-300"
+                    className="object-contain group-hover:scale-105 transition-transform duration-300 size-full"
+                    width={400}
+                    height={400}
                   />
                 </div>
 
@@ -93,15 +95,15 @@ const SearchResults = () => {
                   </div>
                   <div className="pt-2 flex items-center justify-between">
                     <span className="text-lg font-bold text-primary-600">
-                      ${product.price.toFixed(2)}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      {product.variants?.length || 0} variant
-                      {(product.variants?.length || 0) !== 1 ? 's' : ''}
+                      {product.price
+                        ? `$${product.price.toFixed(2)}`
+                        : 'សាកសួរ'}
                     </span>
                   </div>
                 </div>
               </div>
+
+              // <ProductCard product={product} onClick={setSelectedProduct} />
             ))}
           </div>
         ) : query ? (

@@ -169,14 +169,14 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
 
   return (
     <div
-      className={`border rounded-lg overflow-hidden transition ${
+      className={`border rounded-lg overflow-hidden transition flex flex-col ${
         isFocused || showColorPicker
           ? 'border-primary-500 ring-2 ring-primary-200'
           : 'border-slate-200'
       }`}
     >
-      {/* Toolbar */}
-      <div className="bg-slate-50 border-b border-slate-200 p-2 flex flex-wrap gap-1 items-center">
+      {/* Toolbar - Sticky */}
+      <div className="bg-slate-50 border-b border-slate-200 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10 flex-shrink-0">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -340,7 +340,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       <ColorPickerPortal />
 
       {/* Editor */}
-      <div className="prose prose-sm max-w-none">
+      <div className="prose prose-sm max-w-none flex-1 overflow-auto">
         <EditorContent
           editor={editor}
           className="px-3 py-2 min-h-[150px] focus:outline-none text-sm max-h-[254px]"

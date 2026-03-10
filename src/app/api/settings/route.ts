@@ -214,6 +214,7 @@ export async function PUT(req: Request) {
         mapUrl,
         banners: finalBanners as Prisma.InputJsonValue,
         aboutUs: processedAboutUs as Prisma.InputJsonValue,
+        socials: processSocial as Prisma.InputJsonValue,
       },
     })
 
@@ -293,13 +294,16 @@ export async function PUT(req: Request) {
       const oldUrls = oldSocials
         .map((s) => s.image)
         .filter((url) => typeof url === 'string')
+
       const newUrls = processSocial
         .map((s) => s.image)
         .filter((url) => typeof url === 'string')
 
       const urlsToDelete = oldUrls.filter((url) => !newUrls.includes(url))
 
-      await Promise.all(urlsToDelete.map((url) => cleanImage(url, 'socials')))
+      await Promise.all([
+        ...urlsToDelete.map((url) => cleanImage(url, 'socials')),
+      ])
     }
 
     return NextResponse.json(updated)

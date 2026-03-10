@@ -62,6 +62,7 @@ export const SettingsView = () => {
   const [isDirty, setIsDirty] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsTab>('contact')
   const { updateSettings, isSaving } = useSettingMutations()
+  const [hasSubmitted, setHasSubmitted] = useState(false)
 
   // 1. Setup React Hook Form
   const methods = useForm<SettingsFormValues>({
@@ -93,7 +94,7 @@ export const SettingsView = () => {
     watch,
     getValues,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = methods
 
   // Watch all form values for manual dirty tracking
@@ -250,6 +251,8 @@ export const SettingsView = () => {
 
   // 5. Submit Handler
   const onSubmit = async (data: SettingsFormValues) => {
+    if (hasSubmitted) return
+    setHasSubmitted(true)
     setIsLoading(true)
     try {
       const processedBanners = await Promise.all(
@@ -310,7 +313,7 @@ export const SettingsView = () => {
 
       const processedSocials = await Promise.all(
         data.socials.map(async (s: SocialItem, index: number) => {
-          if (s.imageFile) {
+          if (s.imageFile && s.imageFile instanceof File) {
             // const uploadResult = await uploadService.upload(s.imageFile)
             // return { name: s.name, image: uploadResult.url }
 
@@ -325,6 +328,7 @@ export const SettingsView = () => {
           return {
             url: s.url,
             imageFile: null,
+            image: s.image,
           }
         }),
       )
@@ -340,9 +344,12 @@ export const SettingsView = () => {
       }
 
       updateSettings(payload as any)
+      setHasSubmitted(false)
+      setIsDirty(false)
     } catch (e) {
       console.error(e)
       toast.error('Failed to save settings')
+      setHasSubmitted(false)
     } finally {
       setIsLoading(false)
     }
@@ -354,12 +361,12 @@ export const SettingsView = () => {
       const isCtrlOrMeta = e.ctrlKey || e.metaKey
       if (isCtrlOrMeta && e.key === 's') {
         e.preventDefault()
-        if (isDirty && !isLoading && !isSaving) {
+        if (isDirty && !isLoading && !isSaving && !hasSubmitted) {
           handleSubmit(onSubmit)()
         }
       }
     },
-    [isDirty, isLoading, isSaving, handleSubmit, onSubmit],
+    [isDirty, isLoading, isSaving, hasSubmitted, handleSubmit, onSubmit],
   )
 
   useEffect(() => {
@@ -394,7 +401,9 @@ export const SettingsView = () => {
       <FormProvider {...methods}>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+          className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ${
+            hasSubmitted ? 'pointer-events-none' : ''
+          }`}
         >
           {/* --- Tabs Navigation --- */}
           <div className="flex border-b border-slate-200 bg-slate-50">
@@ -513,7 +522,8 @@ export const SettingsView = () => {
                             src={social.image}
                             alt="Banner"
                             className="size-full object-contain aspect-square"
-                            fill
+                            width={64}
+                            height={64}
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full text-slate-400">
@@ -825,7 +835,7 @@ export const SettingsView = () => {
           <div className="flex justify-end pt-4 border-t border-slate-100 bg-slate-50 px-6 py-4">
             <button
               type="submit"
-              disabled={isLoading || !isDirty}
+              disabled={hasSubmitted || isLoading || !isDirty}
               className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (

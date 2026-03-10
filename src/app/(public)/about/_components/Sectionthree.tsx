@@ -3,6 +3,7 @@ import HtmlContent from '@/components/ui/HtmlContent'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { AboutUsSection3Item } from '@/types'
 import { motion } from 'motion/react'
+import Image from 'next/image'
 
 export default function CertificatesSection({
   data,
@@ -34,12 +35,16 @@ export default function CertificatesSection({
             className="border overflow-hidden border-slate-200 shadow-sm rounded-lg flex flex-col items-center"
             key={index}
           >
-            <img
-              src={item.image || generatePlaceholderImage('Certificate')}
-              alt={item.title || 'Certificate'}
-              className="w-full flex-1 h-auto  object-contain"
-              referrerPolicy="no-referrer"
-            />
+            <div className="w-full aspect-[1/1.4142] p-2 bg-white relative">
+              <Image
+                src={item.image || generatePlaceholderImage('Certificate')}
+                alt={item.title || 'Certificate'}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 50vw, 33vw"
+                // unoptimized={item.image?.startsWith('http')}
+              />
+            </div>
             <p className="text-center font-bold text-blue-900 py-2">
               {item.title}
             </p>
