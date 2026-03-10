@@ -24,6 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 
-public/uploads
+public/uploads/*
 .next
 next-env.d.ts

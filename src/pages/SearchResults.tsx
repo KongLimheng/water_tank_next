@@ -1,14 +1,16 @@
 'use client'
 
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { Loader2, Search } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ProductDetailsModal from '../components/Product/ProductDetailsModal'
 import { searchProducts } from '../services/productService'
 import { ProductList } from '../types'
+
+const PAGE_SIZE = 20
 
 const SearchResults = () => {
   const searchParams = useSearchParams()
@@ -19,14 +21,50 @@ const SearchResults = () => {
     null,
   )
 
-  const { data: searchResults, isLoading } = useQuery({
-    queryKey: ['products-search', query],
-    queryFn: () => searchProducts(query),
-    enabled: !!query,
-    staleTime: 1000 * 60 * 5,
-  })
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ['products-search', query],
+      queryFn: ({ pageParam = 0 }) =>
+        searchProducts(query, PAGE_SIZE, pageParam),
+      enabled: !!query,
+      staleTime: 1000 * 60 * 5,
+      getNextPageParam: (lastPage) => {
+        if (!lastPage.hasMore) return undefined
+        return lastPage.offset + lastPage.limit
+      },
+      initialPageParam: 0,
+    })
 
-  const visibleProducts = searchResults || []
+  // Flatten all products from all pages
+  const allProducts = data?.pages.flatMap((page) => page.products) || []
+  const totalResults = data?.pages[0]?.total || 0
+
+  // Infinite scroll observer
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (isFetchingNextPage) return
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage()
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' },
+    )
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current)
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   return (
     <>
@@ -50,8 +88,7 @@ const SearchResults = () => {
               )}
             </p>
             <div className="text-sm text-slate-400 font-medium">
-              {visibleProducts.length} result
-              {visibleProducts.length !== 1 ? 's' : ''} found
+              {totalResults} result{totalResults !== 1 ? 's' : ''} found
             </div>
           </div>
         </div>
@@ -61,51 +98,69 @@ const SearchResults = () => {
           <div className="flex justify-center items-center h-64">
             <Loader2 size={48} className="text-primary-600 animate-spin" />
           </div>
-        ) : visibleProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {visibleProducts.map((product) => (
+        ) : allProducts.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {allProducts.map((product) => (
+                <div
+                  key={product.id}
+                  onClick={() => setSelectedProduct(product)}
+                  className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1"
+                >
+                  {/* Product Image */}
+                  <div className="aspect-square bg-slate-50 relative overflow-hidden">
+                    <Image
+                      src={
+                        product.image[0] ||
+                        generatePlaceholderImage(product.name)
+                      }
+                      alt={product.name}
+                      className="object-contain group-hover:scale-105 transition-transform duration-300 size-full"
+                      width={400}
+                      height={400}
+                    />
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-4 space-y-2">
+                    <div className="text-xs font-medium text-primary-600 uppercase tracking-wide">
+                      {product.category.brand?.name}
+                    </div>
+                    <h3 className="font-semibold text-slate-900 line-clamp-2 min-h-[2.5rem]">
+                      {product.name}
+                    </h3>
+                    <div className="text-sm text-slate-500">
+                      {product.category.name}
+                    </div>
+                    <div className="pt-2 flex items-center justify-between">
+                      <span className="text-lg font-bold text-primary-600">
+                        {product.price
+                          ? `$${product.price.toFixed(2)}`
+                          : 'សាកសួរ'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Load More Trigger */}
+            {hasNextPage && (
               <div
-                key={product.id}
-                onClick={() => setSelectedProduct(product)}
-                className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1"
+                ref={loadMoreRef}
+                className="flex justify-center items-center py-8"
               >
-                {/* Product Image */}
-                <div className="aspect-square bg-slate-50 relative overflow-hidden">
-                  <Image
-                    src={
-                      product.image[0] || generatePlaceholderImage(product.name)
-                    }
-                    alt={product.name}
-                    className="object-contain group-hover:scale-105 transition-transform duration-300 size-full"
-                    width={400}
-                    height={400}
-                  />
-                </div>
-
-                {/* Product Info */}
-                <div className="p-4 space-y-2">
-                  <div className="text-xs font-medium text-primary-600 uppercase tracking-wide">
-                    {product.category.brand?.name}
-                  </div>
-                  <h3 className="font-semibold text-slate-900 line-clamp-2 min-h-[2.5rem]">
-                    {product.name}
-                  </h3>
-                  <div className="text-sm text-slate-500">
-                    {product.category.name}
-                  </div>
-                  <div className="pt-2 flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary-600">
-                      {product.price
-                        ? `$${product.price.toFixed(2)}`
-                        : 'សាកសួរ'}
-                    </span>
-                  </div>
-                </div>
+                <Loader2 size={32} className="text-primary-600 animate-spin" />
               </div>
+            )}
 
-              // <ProductCard product={product} onClick={setSelectedProduct} />
-            ))}
-          </div>
+            {/* No More Results */}
+            {!hasNextPage && allProducts.length > 0 && (
+              <div className="text-center py-8 text-slate-500 text-sm">
+                No more results to load
+              </div>
+            )}
+          </>
         ) : query ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
             <Search size={48} className="text-slate-300 mx-auto mb-4" />

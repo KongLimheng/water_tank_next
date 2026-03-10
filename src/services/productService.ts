@@ -3,17 +3,49 @@ import { cache } from 'react'
 import { ProductList } from '../types'
 import { api } from './apiInstance'
 
-export const getProducts = cache(async (): Promise<ProductList[]> => {
-  const { data } = await api.get<ProductList[]>('/products')
-  return data || []
-})
+export interface PaginatedProductsResponse {
+  products: ProductList[]
+  total: number
+  limit: number
+  offset: number
+  hasMore: boolean
+}
 
-export const searchProducts = async (query: string): Promise<ProductList[]> => {
+export const getProducts = cache(
+  async (limit = 100, offset = 0): Promise<PaginatedProductsResponse> => {
+    const { data } = await api.get<PaginatedProductsResponse>(
+      `/products?limit=${limit}&offset=${offset}`,
+    )
+    return (
+      data || {
+        products: [],
+        total: 0,
+        limit,
+        offset,
+        hasMore: false,
+      }
+    )
+  },
+)
+
+export const searchProducts = async (
+  query: string,
+  limit = 20,
+  offset = 0,
+): Promise<PaginatedProductsResponse> => {
   if (!query || !query.trim()) {
-    return []
+    return {
+      products: [],
+      total: 0,
+      limit,
+      offset,
+      hasMore: false,
+    }
   }
-  const { data } = await api.get<ProductList[]>(`/products?q=${encodeURIComponent(query.trim())}`)
-  return data || []
+  const { data } = await api.get<PaginatedProductsResponse>(
+    `/products?q=${encodeURIComponent(query.trim())}&limit=${limit}&offset=${offset}`,
+  )
+  return data || { products: [], total: 0, limit, offset, hasMore: false }
 }
 
 export const getProductsByBrandCategory = async (

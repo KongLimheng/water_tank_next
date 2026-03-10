@@ -23,7 +23,7 @@ import {
   UploadCloud,
   User,
 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Controller,
   FormProvider,
@@ -59,7 +59,6 @@ type SettingsTab = 'contact' | 'banners' | 'about'
 
 export const SettingsView = () => {
   const [isLoading, setIsLoading] = useState(false)
-  const [isDirty, setIsDirty] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsTab>('contact')
   const { updateSettings, isSaving } = useSettingMutations()
   const [hasSubmitted, setHasSubmitted] = useState(false)
@@ -94,7 +93,7 @@ export const SettingsView = () => {
     watch,
     getValues,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty: isRHFDirty },
   } = methods
 
   // Watch all form values for manual dirty tracking
@@ -104,13 +103,14 @@ export const SettingsView = () => {
   const [initialValues, setInitialValues] = useState<SettingsFormValues | null>(
     null,
   )
+  const hasLoadedInitialValues = useRef(false)
 
-  // Check if form is dirty by comparing current values with initial values
+  // Check if form is dirty - use RHF's built-in tracking as primary source
   useEffect(() => {
-    if (initialValues) {
-      const isFormDirty =
-        JSON.stringify(watchedValues) !== JSON.stringify(initialValues)
-      setIsDirty(isFormDirty)
+    // Once initial values are loaded, also compare with watched values
+    // as a fallback/secondary check
+    if (initialValues && !hasLoadedInitialValues.current) {
+      hasLoadedInitialValues.current = true
     }
   }, [watchedValues, initialValues])
 
@@ -127,6 +127,10 @@ export const SettingsView = () => {
     queryFn: getCategories,
     staleTime: 1000 * 60 * 60,
   })
+
+  // Force disable save button until initial data loads to prevent premature saves
+  const isInitialLoading =
+    !initialValues && !isCategoriesLoading && !settings?.banners
 
   // 2. Setup Field Array for Banners
   const { fields, append, remove, update } = useFieldArray({
@@ -251,7 +255,7 @@ export const SettingsView = () => {
 
   // 5. Submit Handler
   const onSubmit = async (data: SettingsFormValues) => {
-    if (hasSubmitted) return
+    if (hasSubmitted || isSaving) return
     setHasSubmitted(true)
     setIsLoading(true)
     try {
@@ -283,30 +287,37 @@ export const SettingsView = () => {
       )
 
       // Process aboutUs images
+      const aboutUs = data.aboutUs || {
+        section1: { image: '', content: '' },
+        section2: [{ image: '', content: '' }],
+        section3: {
+          description: '',
+          items: [{ title: 'Certificate 1', image: '' }],
+        },
+      }
+
       const processedAboutUs = {
         section1: {
-          image: data.aboutUs.section1.image,
-          content: data.aboutUs.section1.content,
-          imageFile: data.aboutUs.section1.imageFile,
+          image: aboutUs.section1?.image,
+          content: aboutUs.section1?.content,
+          imageFile: aboutUs.section1?.imageFile,
         },
         section2: await Promise.all(
-          data.aboutUs.section2.map(async (item: AboutUsItem) => ({
+          aboutUs.section2.map(async (item: AboutUsItem) => ({
             image: item.image,
             content: item.content,
             imageFile: item.imageFile,
           })),
         ),
         section3: {
-          description: data.aboutUs.section3.description,
+          description: aboutUs.section3.description,
 
           items: await Promise.all(
-            data.aboutUs.section3.items.map(
-              async (item: AboutUsSection3Item) => ({
-                title: item.title,
-                image: item.image,
-                imageFile: item.imageFile,
-              }),
-            ),
+            aboutUs.section3.items.map(async (item: AboutUsSection3Item) => ({
+              title: item.title,
+              image: item.image,
+              imageFile: item.imageFile,
+            })),
           ),
         },
       }
@@ -344,16 +355,19 @@ export const SettingsView = () => {
       }
 
       updateSettings(payload as any)
-      setHasSubmitted(false)
-      setIsDirty(false)
     } catch (e) {
       console.error(e)
       toast.error('Failed to save settings')
       setHasSubmitted(false)
     } finally {
       setIsLoading(false)
+      setHasSubmitted(false)
     }
   }
+
+  console.log(
+    `isSaving: ${isSaving}, isRHFDirty: ${isRHFDirty}, hasSubmitted: ${hasSubmitted}, isInitialLoading: ${isInitialLoading}`,
+  )
 
   // Keyboard shortcut: Ctrl+S to save
   const handleKeyDown = useCallback(
@@ -361,12 +375,26 @@ export const SettingsView = () => {
       const isCtrlOrMeta = e.ctrlKey || e.metaKey
       if (isCtrlOrMeta && e.key === 's') {
         e.preventDefault()
-        if (isDirty && !isLoading && !isSaving && !hasSubmitted) {
+        if (
+          isRHFDirty &&
+          !isLoading &&
+          !isSaving &&
+          !hasSubmitted &&
+          !isInitialLoading
+        ) {
           handleSubmit(onSubmit)()
         }
       }
     },
-    [isDirty, isLoading, isSaving, hasSubmitted, handleSubmit, onSubmit],
+    [
+      isRHFDirty,
+      isLoading,
+      isSaving,
+      hasSubmitted,
+      handleSubmit,
+      onSubmit,
+      isInitialLoading,
+    ],
   )
 
   useEffect(() => {
@@ -401,9 +429,7 @@ export const SettingsView = () => {
       <FormProvider {...methods}>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ${
-            hasSubmitted ? 'pointer-events-none' : ''
-          }`}
+          className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden`}
         >
           {/* --- Tabs Navigation --- */}
           <div className="flex border-b border-slate-200 bg-slate-50">
@@ -835,16 +861,19 @@ export const SettingsView = () => {
           <div className="flex justify-end pt-4 border-t border-slate-100 bg-slate-50 px-6 py-4">
             <button
               type="submit"
-              disabled={hasSubmitted || isLoading || !isDirty}
+              disabled={
+                hasSubmitted ||
+                isLoading ||
+                isSaving ||
+                !isRHFDirty ||
+                isInitialLoading
+              }
               className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {isSaving && (
                 <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full"></span>
-              ) : (
-                <>
-                  <Save size={18} /> Save Settings
-                </>
-              )}
+              )}{' '}
+              <Save size={18} /> Save Settings
             </button>
           </div>
         </form>

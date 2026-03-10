@@ -5,7 +5,7 @@ import { ImageIcon, Plus, Trash2, UploadCloud } from 'lucide-react'
 import Image from 'next/image'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { TipTapEditor } from '../TipTapEditor'
+import { TipTapEditor } from '../../TipTapEditor'
 
 interface SettingsFormValues {
   phone: string
@@ -28,8 +28,8 @@ function AboutUsSectionInner() {
     if (files && files[0]) {
       const file = files[0]
       const previewUrl = URL.createObjectURL(file)
-      setValue('aboutUs.section1.image', previewUrl)
-      setValue('aboutUs.section1.imageFile', file)
+      setValue('aboutUs.section1.image', previewUrl, { shouldDirty: true })
+      setValue('aboutUs.section1.imageFile', file, { shouldDirty: true })
     }
   }
 
@@ -51,15 +51,18 @@ function AboutUsSectionInner() {
     if (files && files[0]) {
       const file = files[0]
       const previewUrl = URL.createObjectURL(file)
-      setValue(`aboutUs.section2.${itemIndex}.image`, previewUrl)
-      setValue(`aboutUs.section2.${itemIndex}.imageFile`, file)
+      setValue(`aboutUs.section2.${itemIndex}.image`, previewUrl, {
+        shouldDirty: true,
+      })
+      setValue(`aboutUs.section2.${itemIndex}.imageFile`, file, {
+        shouldDirty: true,
+      })
     }
   }
 
   // Add a new section 2 item
   const addSection2Item = () => {
     appendSection2({ image: '', content: '' })
-    toast.success('New item added to section 2')
   }
 
   // Remove a section 2 item
@@ -69,7 +72,6 @@ function AboutUsSectionInner() {
       return
     }
     removeSection2(index)
-    toast.success('Item removed')
   }
 
   // Configure field array for section3 items (certificates)
@@ -128,9 +130,9 @@ function AboutUsSectionInner() {
                 Main Image
               </label>
               <div className="w-full h-64 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
-                {watchedAboutUs.section1.image ? (
+                {watchedAboutUs?.section1?.image ? (
                   <Image
-                    src={watchedAboutUs.section1.image}
+                    src={watchedAboutUs?.section1?.image}
                     alt="Section 1"
                     className="size-full object-cover"
                     fill
@@ -161,7 +163,9 @@ function AboutUsSectionInner() {
               <TipTapEditor
                 value={watchedAboutUs?.section1?.content || ''}
                 onChange={(content) =>
-                  setValue('aboutUs.section1.content', content)
+                  setValue('aboutUs.section1.content', content, {
+                    shouldDirty: true,
+                  })
                 }
               />
             </div>
@@ -169,20 +173,11 @@ function AboutUsSectionInner() {
         </div>
 
         {/* === SECTION 2: Items Array === */}
-        <div className="space-y-4 border-t border-slate-200 pt-6">
+        <div className="space-y-4 border-t border-slate-200 pt-6 flex flex-col">
           <div className="flex justify-between items-center">
             <h4 className="text-md font-bold text-slate-700">
               Section 2: Product/Item Gallery
             </h4>
-            {section2Fields.length < 10 && (
-              <button
-                type="button"
-                onClick={addSection2Item}
-                className="text-xs font-bold text-primary-600 flex items-center gap-1 hover:underline"
-              >
-                <Plus size={14} /> Add Item
-              </button>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -218,10 +213,11 @@ function AboutUsSectionInner() {
                       <div className="w-64 aspect-square bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                         {watchedItem?.image ? (
                           <Image
-                            src={watchedItem.image}
+                            src={watchedItem?.image}
                             alt={`Item ${itemIndex + 1}`}
                             className="size-full object-cover"
                             fill
+                            sizes="( max-width: 768px ) 50vw, 33vw"
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full text-slate-400">
@@ -257,6 +253,7 @@ function AboutUsSectionInner() {
                           setValue(
                             `aboutUs.section2.${itemIndex}.content`,
                             content,
+                            { shouldDirty: true },
                           )
                         }
                       />
@@ -279,6 +276,16 @@ function AboutUsSectionInner() {
               </button>
             </div>
           )}
+
+          {section2Fields.length < 10 && (
+            <button
+              type="button"
+              onClick={addSection2Item}
+              className="text-xs font-bold justify-end text-primary-600 flex items-center gap-1 hover:underline"
+            >
+              <Plus size={14} /> Add Item
+            </button>
+          )}
         </div>
 
         {/* === SECTION 3: Items Array === */}
@@ -294,9 +301,11 @@ function AboutUsSectionInner() {
               Description
             </label>
             <TipTapEditor
-              value={watchedAboutUs.section3.description || ''}
+              value={watchedAboutUs?.section3?.description || ''}
               onChange={(content) =>
-                setValue('aboutUs.section3.description', content)
+                setValue('aboutUs.section3.description', content, {
+                  shouldDirty: true,
+                })
               }
             />
           </div>
@@ -335,11 +344,11 @@ function AboutUsSectionInner() {
                       <div className="w-full h-80 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                         {watchedItem?.image ? (
                           <Image
-                            src={watchedItem.image}
+                            src={watchedItem?.image}
                             alt={`Certificate ${itemIndex + 1}`}
                             className="size-full object-contain"
                             fill
-                            sizes="10"
+                            sizes="( max-width: 768px ) 100vw, 25vw"
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full text-slate-400">
@@ -377,6 +386,7 @@ function AboutUsSectionInner() {
                           setValue(
                             `aboutUs.section3.items.${itemIndex}.title`,
                             e.target.value,
+                            { shouldDirty: true },
                           )
                         }
                       />

@@ -26,25 +26,27 @@ interface User {
 }
 
 const ProductView = lazy(() =>
-  import('./views/ProductView').then((module) => ({
+  import('./views/admins/ProductView').then((module) => ({
     default: module.ProductView,
   })),
 )
 
 const CategoryView = lazy(() =>
-  import('./views/CategoryView').then((module) => ({
+  import('./views/admins/CategoryView').then((module) => ({
     default: module.CategoryView,
   })),
 )
 
 const SettingsView = lazy(() =>
-  import('./views/SettingsView').then((module) => ({
+  import('./views/admins/SettingsView').then((module) => ({
     default: module.SettingsView,
   })),
 )
 
 const VideoView = lazy(() =>
-  import('./views/VideoView').then((module) => ({ default: module.VideoView })),
+  import('./views/admins/VideoView').then((module) => ({
+    default: module.VideoView,
+  })),
 )
 
 interface AdminDashboardProps {
@@ -86,20 +88,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     }
   }, [])
 
-  const onExit = () => {
-    router.push('/')
-  }
-
   const handleLogout = async () => {
     await signOut({ redirect: true, callbackUrl: '/login' })
-    onExit()
   }
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: productsData, isLoading } = useQuery({
     queryKey: ['products', 'all'],
-    queryFn: getProducts,
+    queryFn: () => getProducts(100, 0),
     enabled: user !== null,
   })
+
+  const products = productsData?.products || []
 
   if (isLoading) {
     return (
@@ -226,7 +225,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               </div>
             }
           >
-            {activeTab === 'products' && <ProductView products={products} />}
+            {activeTab === 'products' && (
+              <ProductView
+                products={products}
+                total={productsData?.total}
+              />
+            )}
             {activeTab === 'categories' && <CategoryView />}
             {activeTab === 'videos' && <VideoView />}
             {activeTab === 'settings' && <SettingsView />}

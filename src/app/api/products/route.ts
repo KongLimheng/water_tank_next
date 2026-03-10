@@ -1,117 +1,155 @@
-import { saveFile } from '@/lib/fileUpload';
-import { prisma } from '@/lib/prismaClient';
-import { NextRequest, NextResponse } from 'next/server';
+import { saveFile } from '@/lib/fileUpload'
+import { prisma } from '@/lib/prismaClient'
+import { Prisma } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server'
+
+// Helper function to extract numeric value from volume string
+const getVolumeNumber = (volume?: string) => {
+  if (!volume) return 0
+  const match = volume.match(/\d+/)
+  return match ? parseInt(match[0], 10) : 0
+}
+
+// Shared include configuration for product queries
+const productInclude = {
+  variants: true,
+  category: {
+    include: {
+      brand: true,
+    },
+  },
+} as const
+
+// Build search conditions for query and count
+const buildSearchWhere = (query: string): Prisma.ProductWhereInput => ({
+  OR: [{ volume: { contains: query, mode: 'insensitive' } }],
+})
+
+// Sort products: by volume (numeric asc), then by volume string
+const sortProducts = (products: any[]) =>
+  products.sort((a, b) => {
+    const volA = getVolumeNumber(a.volume ?? '')
+    const volB = getVolumeNumber(b.volume ?? '')
+    if (volA !== volB) return volA - volB
+    return (a.volume ?? '').localeCompare(b.volume ?? '', 'km')
+  })
+
+// Build paginated response
+const buildPaginatedResponse = (
+  products: any[],
+  total: number,
+  limit: number,
+  offset: number,
+) => ({
+  products,
+  total,
+  limit,
+  offset,
+  hasMore: offset + products.length < total,
+})
 
 export async function GET(req: NextRequest) {
   try {
-    const searchParams = req.nextUrl.searchParams;
-    const query = searchParams.get('q');
+    const searchParams = req.nextUrl.searchParams
+    const query = searchParams.get('q')
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const offset = parseInt(searchParams.get('offset') || '0')
 
-    // If search query is provided, perform search
     if (query) {
-      const products = await prisma.product.findMany({
-        where: {
-          OR: [
-            { name: { contains: query, mode: 'insensitive' } },
-            { description: { contains: query, mode: 'insensitive' } },
-            { type: { contains: query, mode: 'insensitive' } },
-            { brand: { contains: query, mode: 'insensitive' } },
+      const where = buildSearchWhere(query)
+      const [products, total] = await prisma.$transaction([
+        prisma.product.findMany({
+          where,
+          include: productInclude,
+          skip: offset,
+          take: limit,
+          orderBy: [
+            { category: { name: 'asc' } },
+            { type: 'desc' },
+            { group: 'asc' },
+            { volume: 'asc' },
           ],
-        },
-        include: {
-          variants: true,
-          category: {
-            include: {
-              brand: true,
-            },
-          },
-        },
-        orderBy: { id: 'desc' },
-        take: 20, // Limit search results
-      });
+        }),
+        prisma.product.count({ where }),
+      ])
 
-      return NextResponse.json(products);
+      return NextResponse.json(
+        buildPaginatedResponse(products, total, limit, offset),
+      )
     }
 
-    // Default: fetch all products
-    const products = await prisma.product.findMany({
-      include: {
-        variants: true,
-        category: {
-          include: {
-            brand: true,
-          },
-        },
-      },
-      orderBy: { id: 'desc' },
-    });
+    const [products, total] = await prisma.$transaction([
+      prisma.product.findMany({
+        include: productInclude,
+        skip: offset,
+        take: limit,
+        orderBy: [{ volume: 'asc' }],
+      }),
+      prisma.product.count(),
+    ])
 
-    return NextResponse.json(products);
+    return NextResponse.json(
+      buildPaginatedResponse(products, total, limit, offset),
+    )
   } catch (err) {
-    console.error('Failed to fetch products', err);
+    console.error('Failed to fetch products', err)
     return NextResponse.json(
       { error: 'Failed to fetch products' },
-      { status: 500 }
-    );
+      { status: 500 },
+    )
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData();
-    const name = formData.get('name') as string;
-    const description = (formData.get('description') as string) || '';
-    const price = parseFloat(formData.get('price') as string);
-    const categoryId = parseInt(formData.get('categoryId') as string);
-    const brand = (formData.get('brand') as string) || null; // Can be null in prisma?
-    const volume = (formData.get('volume') as string) || null;
-    const type = (formData.get('type') as string) || null;
-    const group = (formData.get('group') as string) || null;
-    const diameter = (formData.get('diameter') as string) || null;
-    const height = (formData.get('height') as string) || null;
-    const length = (formData.get('length') as string) || null;
-    const variantsRaw = formData.get('variants') as string;
-    const existingImage = formData.get('existingImage') as string; // From existing logic
+    const formData = await req.formData()
+    const name = formData.get('name') as string
+    const description = (formData.get('description') as string) || ''
+    const price = parseFloat(formData.get('price') as string)
+    const categoryId = parseInt(formData.get('categoryId') as string)
+    const brand = (formData.get('brand') as string) || null
+    const volume = (formData.get('volume') as string) || null
+    const type = (formData.get('type') as string) || null
+    const group = (formData.get('group') as string) || null
+    const diameter = (formData.get('diameter') as string) || null
+    const height = (formData.get('height') as string) || null
+    const length = (formData.get('length') as string) || null
+    const variantsRaw = formData.get('variants') as string
+    const existingImage = formData.get('existingImage') as string
 
     if (!name || isNaN(price)) {
       return NextResponse.json(
         { msg: 'Name and Price are required' },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    let parsedVariants: any[] = [];
+    let parsedVariants: any[] = []
     try {
-      parsedVariants = variantsRaw ? JSON.parse(variantsRaw) : [];
+      parsedVariants = variantsRaw ? JSON.parse(variantsRaw) : []
     } catch {
       return NextResponse.json(
         { error: 'Invalid variants JSON format' },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    // Handle Files
-    const galleryPaths: string[] = [];
-    // Iterate all entries to find files. server.ts used upload.any() so any field could contain files.
-    // However, usually they are grouped. Let's look for known file fields or just all Files.
-    // server.ts logic: "const files = (req.files as Express.Multer.File[]) || []" -> multer captures ALL files.
-    for (const [key, value] of formData.entries()) {
+    // Handle file uploads
+    const galleryPaths: string[] = []
+    for (const [, value] of formData.entries()) {
       if (value instanceof File && value.size > 0) {
-        // Skip if it's empty or not actually a file we want?
-        // Check mimetype if feasible, or rely on client.
-        const path = await saveFile(value, 'products');
-        galleryPaths.push(path);
+        const path = await saveFile(value, 'products')
+        galleryPaths.push(path)
       }
     }
 
-    let imageList = galleryPaths;
-    if (galleryPaths.length === 0 && existingImage) {
-      imageList = [existingImage];
-    }
-
-    // Slug logic
-    const slug =
-      name.toLowerCase().replace(/\s+/g, '_') + `_${Date.now()}`;
+    const imageList =
+      galleryPaths.length > 0
+        ? galleryPaths
+        : existingImage
+          ? [existingImage]
+          : []
+    const slug = name.toLowerCase().replace(/\s+/g, '_') + `_${Date.now()}`
 
     const newProduct = await prisma.product.create({
       data: {
@@ -129,7 +167,7 @@ export async function POST(req: Request) {
         diameter,
         length,
         variants: {
-          create: parsedVariants.map((v: any) => ({
+          create: parsedVariants.map((v) => ({
             name: v.name,
             price: parseFloat(v.price),
             stock: parseInt(v.stock) || 0,
@@ -139,14 +177,14 @@ export async function POST(req: Request) {
         },
       },
       include: { variants: true },
-    });
+    })
 
-    return NextResponse.json(newProduct);
+    return NextResponse.json(newProduct)
   } catch (err) {
-    console.error('Error creating product:', err);
+    console.error('Error creating product:', err)
     return NextResponse.json(
       { error: 'Failed to create product' },
-      { status: 500 }
-    );
+      { status: 500 },
+    )
   }
 }

@@ -4,12 +4,11 @@ import { NextResponse } from 'next/server'
 
 const protectedRoutes = ['/admin']
 const adminRoutes = ['/admin']
+const loginRoutes = ['/login']
 
 export async function proxy(request: NextRequest) {
   const session = await auth()
   const pathname = request.nextUrl.pathname
-
-  console.log(pathname, '<><>')
 
   // Check if route requires authentication
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
@@ -25,6 +24,14 @@ export async function proxy(request: NextRequest) {
       session.user.role?.toLowerCase() !== 'admin'
     ) {
       return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+
+  if (loginRoutes.some((route) => pathname.startsWith(route))) {
+    if (session?.user) {
+      return NextResponse.redirect(new URL('/admin', request.url))
+    } else {
+      return NextResponse.next()
     }
   }
 

@@ -1,20 +1,21 @@
+import { ProductModal } from '@/components/Product/ProductModel'
+import { useProductMutations } from '@/hooks/useProductMutations'
+import { generatePlaceholderImage } from '@/lib/placeholderImage'
+import { getCategories } from '@/services/categoryService'
+import { ProductList } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import { Edit, Loader2, Plus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { useProductMutations } from '../../hooks/useProductMutations'
-import { generatePlaceholderImage } from '../../lib/placeholderImage'
-import { getCategories } from '../../services/categoryService'
-import { ProductList } from '../../types'
-import { ProductModal } from '../Product/ProductModel'
 
 interface ProductViewProp {
   products: ProductList[]
+  total?: number
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
 
-export const ProductView = ({ products }: ProductViewProp) => {
+export const ProductView = ({ products, total }: ProductViewProp) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<ProductList | null>(null)
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -52,7 +53,8 @@ export const ProductView = ({ products }: ProductViewProp) => {
       )
     : products
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize))
+  const totalItems = total ?? filteredProducts.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
   const safeCurrentPage = Math.min(currentPage, totalPages)
   const startIndex = (safeCurrentPage - 1) * pageSize
   const paginatedProducts = filteredProducts.slice(
@@ -241,11 +243,11 @@ export const ProductView = ({ products }: ProductViewProp) => {
                   </span>
                   -
                   <span className="font-semibold text-slate-700">
-                    {Math.min(startIndex + pageSize, filteredProducts.length)}
+                    {Math.min(startIndex + pageSize, totalItems)}
                   </span>{' '}
                   of{' '}
                   <span className="font-semibold text-slate-700">
-                    {filteredProducts.length}
+                    {totalItems}
                   </span>
                 </span>
                 <div className="flex items-center gap-2">

@@ -1,8 +1,11 @@
+import { BrandModal } from '@/components/BrandModal'
+import { CategoryModal } from '@/components/Category/CategoryModel'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { useBrandMutations } from '@/hooks/useBrandMutations'
 import { useCategoryMutations } from '@/hooks/useCategoryMutations'
 import { Brand, getBrands } from '@/services/brandService'
 import { getCategories } from '@/services/categoryService'
-import { Category, CategoryList } from '@/types'
+import { Category } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import {
   Edit,
@@ -14,9 +17,6 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import React, { useState } from 'react'
-import { BrandModal } from '../BrandModal'
-import { CategoryModal } from '../Category/CategoryModel'
-import { ConfirmModal } from '../ConfirmModal'
 
 export const CategoryView: React.FC = () => {
   // --- TABS STATE ---

@@ -99,7 +99,7 @@ const SearchBox: React.FC<{
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           placeholder="Search products..."
-          className="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl text-xs lg:text-sm lgfocus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+          className="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl text-xs lg:text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
         />
       </div>
 

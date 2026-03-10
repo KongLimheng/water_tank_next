@@ -52,7 +52,6 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
       }
     })
 
-    // 4. Sort by Price
     Object.values(groups).forEach((group) => {
       group.vertical.sort((a, b) => {
         const volA = getVolumeNumber(a.volume!)

@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { Edit, Plus, Save, Trash2, X } from 'lucide-react'
 import React, { useState } from 'react'
-import { useVideoMutations } from '../../hooks/useVideoMutations'
-import { getVideos } from '../../services/videoService'
-import { Video } from '../../types'
-import { ConfirmModal } from '../ConfirmModal'
+import { useVideoMutations } from '../../../hooks/useVideoMutations'
+import { getVideos } from '../../../services/videoService'
+import { Video } from '../../../types'
+import { ConfirmModal } from '../../ConfirmModal'
 
 export const VideoView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingVideo, setEditingVideo] = useState<Video | null>(null)
-  const [deleteData, setDeleteData] = useState<number|null>(null)
+  const [deleteData, setDeleteData] = useState<number | null>(null)
 
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ['videos', 'all-tab'], // Cache key
