@@ -15,6 +15,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**',
       },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
     ],
   },
   // Experimental features if needed, but standard 13/14/15 is stable
