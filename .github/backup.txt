@@ -1,0 +1,97 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx prisma generate
+
+      - run: npm run build
+
+      - name: Create artifact
+        run: |
+          tar -czf build.tar.gz \
+          .next \
+          public \
+          prisma \
+          package.json \
+          package-lock.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: build.tar.gz
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nextjs-build
+
+      - name: Upload build
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: build.tar.gz
+          target: /var/www/water_tank-app
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+
+            set -e
+
+            APP_DIR=/var/www/water_tank-app
+            RELEASE_DIR=$APP_DIR/releases/$(date +%s)
+
+            mkdir -p $RELEASE_DIR
+
+            mv $APP_DIR/build.tar.gz $RELEASE_DIR
+            cd $RELEASE_DIR
+
+            tar -xzf build.tar.gz
+
+            npm ci --omit=dev
+
+            npx prisma migrate deploy
+
+            ln -sfn $APP_DIR/shared/.env .env
+
+            ln -sfn $RELEASE_DIR $APP_DIR/current
+
+            cd $APP_DIR
+
+            pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+
+            pm2 save
+
+            echo "Deployment completed"
