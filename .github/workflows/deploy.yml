@@ -1,0 +1,71 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches:
+      - main # Change to your default branch if different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script: |
+            cd /var/www/water_tank-app
+
+            # Pull latest changes
+            git pull origin main
+
+            # Create .env file from GitHub Secrets (overwrites)
+            cat > .env << EOF
+            DATABASE_URL=${{ env.DATABASE_URL }}
+            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            NODE_ENV=production
+            PORT=3000
+            EOF
+
+            # Install production dependencies
+            npm ci --production
+
+            # Run database migrations
+            npx prisma migrate deploy
+
+            # Build Next.js
+            npm run build
+
+            # Restart PM2 application
+            pm2 restart water_tank-app
+
+            # Save PM2 process list
+            pm2 save
+
+            # Show PM2 status
+            pm2 list

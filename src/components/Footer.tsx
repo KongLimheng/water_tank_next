@@ -28,24 +28,29 @@ export default function Footer() {
                 លោកអ្នកអាចទំនាក់ទំនងយើងតាមរយៈ៖
               </h3>
               <div className="space-y-4 ">
-                <div className="text-sm md:text-lg xl:text-2xl flex items-start gap-2">
+                <div className="text-sm md:text-lg xl:text-2xl flex items-center gap-2">
                   <span className="font-bold text-black min-w-[120px]">
                     ទូរស័ព្ទលេខ:
                   </span>
-                  <span className="tracking-wide">{settings.phone}</span>
+                  <a
+                    href={`tel:${settings.phone}`}
+                    className="md:text-base text-blue-500 hover:text-blue-400 underline decoration-blue-500/50"
+                  >
+                    {settings.phone}
+                  </a>
                 </div>
-                <div className="text-sm md:text-lg xl:text-2xl flex items-start gap-2">
+                <div className="text-sm md:text-lg xl:text-2xl flex items-center gap-2">
                   <span className="font-bold min-w-[120px]">
                     សារអេឡិចត្រូនិច:
                   </span>
                   <a
                     href={`mailto:${settings.email}`}
-                    className=" md:text-base text-blue-500 hover:text-blue-400 underline decoration-blue-500/50"
+                    className="md:text-base text-blue-500 hover:text-blue-400 underline decoration-blue-500/50"
                   >
                     {settings.email}
                   </a>
                 </div>
-                <div className="text-sm md:text-lg xl:text-2xl flex items-start gap-2">
+                <div className="text-sm md:text-lg xl:text-2xl flex items-center gap-2">
                   <span className="font-bold min-w-[120px]">អាស័យដ្ឋាន:</span>
                   <span className="">{settings.address}</span>
                 </div>
@@ -55,18 +60,24 @@ export default function Footer() {
                 {/* Social Icons */}
                 {settings.socials &&
                   settings.socials.map((social, index) => {
+                    const socialUrl = social.url
+                      ? social.url.startsWith('http')
+                        ? social.url
+                        : `https://${social.url}`
+                      : null
+
                     return (
-                      <div
+                      <a
                         key={index}
+                        href={socialUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className={cn(
-                          'rounded-full overflow-hidden size-10 relative',
-                          social.url ? 'cursor-pointer' : '',
+                          'rounded-full overflow-hidden size-10 relative inline-block',
+                          socialUrl
+                            ? 'cursor-pointer'
+                            : 'pointer-events-none opacity-50',
                         )}
-                        onClick={() => {
-                          if (social.url) {
-                            window.open(social.url, '_blank')
-                          }
-                        }}
                       >
                         <Image
                           src={
@@ -78,7 +89,7 @@ export default function Footer() {
                           className="size-full object-contain"
                           referrerPolicy="no-referrer"
                         />
-                      </div>
+                      </a>
                     )
                   })}
               </div>

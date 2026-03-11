@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
@@ -6,7 +6,6 @@ import CategoryCard from '../components/Category/CategoryCard'
 import { getCategories } from '../services/categoryService'
 
 const ShopCategories = () => {
-
   // Fetch Categories
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['categories'],
@@ -21,10 +20,10 @@ const ShopCategories = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-khmer">
+          <h1 className="text-2xl lg:text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-khmer">
             Our Products
           </h1>
-          <p className="text-lg text-slate-600">
+          <p className="text-sm lg:text-lg text-slate-600">
             Select a category below to browse our premium water filtration
             products and accessories.
           </p>
@@ -45,9 +44,7 @@ const ShopCategories = () => {
               </div>
             ) : (
               <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
-                <p className="text-slate-400 text-lg">
-                  No categories found.
-                </p>
+                <p className="text-slate-400 text-lg">No categories found.</p>
               </div>
             )}
           </>

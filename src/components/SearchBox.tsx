@@ -7,7 +7,8 @@ import React, { useEffect, useRef, useState } from 'react'
 
 const SearchBox: React.FC<{
   setMobileMenu?: (isOpen: boolean) => void
-}> = ({ setMobileMenu }) => {
+  closeOnEscape?: boolean
+}> = ({ setMobileMenu, closeOnEscape = true }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const router = useRouter()
@@ -47,19 +48,34 @@ const SearchBox: React.FC<{
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Prevent mobile menu from closing when focusing on search
+  const handleFocus = () => {
+    setIsFocused(true)
+  }
+
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+  }
+
+  const handleInputTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation()
+  }
+
   // Close search on Escape key
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsFocused(false)
         setSearchQuery('')
-        setMobileMenu && setMobileMenu(false) // Close mobile menu if open
+        if (closeOnEscape) {
+          setMobileMenu && setMobileMenu(false)
+        }
       }
     }
 
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
-  }, [])
+  }, [closeOnEscape, setMobileMenu])
 
   const handleProductClick = (product: ProductList) => {
     setIsFocused(false)
@@ -78,14 +94,19 @@ const SearchBox: React.FC<{
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleViewAllResults()
       setMobileMenu && setMobileMenu(false)
+      handleViewAllResults()
     }
   }
 
   // const hasResults = searchResults && searchResults.length > 0
   return (
-    <div ref={searchRef} className="relative w-full md:max-w-md">
+    <div
+      ref={searchRef}
+      className="relative w-full md:max-w-md"
+      onClick={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
       {/* Search Input */}
       <div className="relative">
         <Search
@@ -97,7 +118,9 @@ const SearchBox: React.FC<{
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
+          onFocus={handleFocus}
+          onClick={handleInputClick}
+          onTouchEnd={handleInputTouchEnd}
           placeholder="Search products..."
           className="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl text-xs lg:text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
         />

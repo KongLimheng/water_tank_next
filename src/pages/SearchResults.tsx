@@ -68,17 +68,17 @@ const SearchResults = () => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         {/* Search Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Search size={28} className="text-primary-600" />
-            <h1 className="text-3xl font-bold text-slate-900">
+            <Search className="text-primary-600 size-6 lg:size-7" />
+            <h1 className="text-xl lg:text-3xl font-bold text-slate-900">
               Search Results
             </h1>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-lg text-slate-600">
+            <p className="text-sm lg:text-lg text-slate-600">
               {query ? (
                 <>
                   Results for "<span className="font-semibold">{query}</span>"
@@ -132,8 +132,8 @@ const SearchResults = () => {
                     <div className="text-sm text-slate-500">
                       {product.category.name}
                     </div>
-                    <div className="pt-2 flex items-center justify-between">
-                      <span className="text-lg font-bold text-primary-600">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm md:text-lg font-bold text-primary-600">
                         {product.price
                           ? `$${product.price.toFixed(2)}`
                           : 'សាកសួរ'}

@@ -2,20 +2,16 @@ import { ProductModal } from '@/components/Product/ProductModel'
 import { useProductMutations } from '@/hooks/useProductMutations'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { getCategories } from '@/services/categoryService'
+import { getProducts, searchProducts } from '@/services/productService'
 import { ProductList } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import { Edit, Loader2, Plus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
-
-interface ProductViewProp {
-  products: ProductList[]
-  total?: number
-}
+import { useState } from 'react'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
 
-export const ProductView = ({ products, total }: ProductViewProp) => {
+export const ProductView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<ProductList | null>(null)
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -32,9 +28,9 @@ export const ProductView = ({ products, total }: ProductViewProp) => {
   }
 
   const { data: categories = [] } = useQuery({
-    queryKey: ['categories', 'all'], // Cache key
+    queryKey: ['categories', 'all'],
     queryFn: getCategories,
-    staleTime: 1000 * 60 * 10, // Keep categories fresh for 10 minutes
+    staleTime: 1000 * 60 * 10,
   })
 
   const handleDelete = (id: number) => {
@@ -46,31 +42,35 @@ export const ProductView = ({ products, total }: ProductViewProp) => {
     }
   }
 
-  const normalizedQuery = searchQuery.trim().toLowerCase()
-  const filteredProducts = normalizedQuery
-    ? products.filter((product) =>
-        product.name.toLowerCase().includes(normalizedQuery),
-      )
-    : products
+  // Server-side pagination: calculate offset from current page and page size
+  const offset = (currentPage - 1) * pageSize
 
-  const totalItems = total ?? filteredProducts.length
+  // Fetch products from API with server-side pagination
+  const { data, isLoading } = useQuery({
+    queryKey: ['products', 'admin', searchQuery, currentPage, pageSize],
+    queryFn: () =>
+      searchQuery.trim()
+        ? searchProducts(searchQuery.trim(), pageSize, offset)
+        : getProducts(pageSize, offset),
+    staleTime: 1000 * 60 * 5, // Keep data fresh for 5 minutes
+  })
+
+  const products = data?.products ?? []
+  const totalItems = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
   const safeCurrentPage = Math.min(currentPage, totalPages)
-  const startIndex = (safeCurrentPage - 1) * pageSize
-  const paginatedProducts = filteredProducts.slice(
-    startIndex,
-    startIndex + pageSize,
-  )
+  const startIndex = offset
 
-  useEffect(() => {
-    if (currentPage !== safeCurrentPage) {
-      setCurrentPage(safeCurrentPage)
-    }
-  }, [currentPage, safeCurrentPage])
-
-  useEffect(() => {
+  // Reset to page 1 when search query or page size changes
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query)
     setCurrentPage(1)
-  }, [searchQuery, pageSize])
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1)
+  }
 
   const pageButtonCount = 5
   const halfRange = Math.floor(pageButtonCount / 2)
@@ -98,7 +98,7 @@ export const ProductView = ({ products, total }: ProductViewProp) => {
             <div className="relative">
               <input
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+                onChange={(event) => handleSearchChange(event.target.value)}
                 placeholder="Search by product name..."
                 className="w-full sm:w-64 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
               />
@@ -114,39 +114,45 @@ export const ProductView = ({ products, total }: ProductViewProp) => {
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase font-semibold">
-                <tr>
-                  <th className="px-6 py-4">Product Details</th>
-                  <th className="px-6 py-4">Brand</th>
-                  <th className="px-6 py-4">Category</th>
-                  <th className="px-6 py-4">Type</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {paginatedProducts.map((product) => (
-                  <tr
-                    key={product.id}
-                    className="hover:bg-slate-50/50 transition cursor-pointer"
-                    onDoubleClick={() => handleOpenModal(product)}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src={
-                            product.image[0] ||
-                            generatePlaceholderImage(product.name)
-                          }
-                          alt={product.name}
-                          width={50}
-                          height={50}
-                          onLoad={() => setImageLoaded(true)}
-                          loading="eager"
-                          className="size-12 rounded-lg object-contain bg-slate-100"
-                        />
-                        {/* <img
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                <span className="ml-3 text-slate-500">Loading products...</span>
+              </div>
+            ) : (
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase font-semibold">
+                  <tr>
+                    <th className="px-6 py-4">Product Details</th>
+                    <th className="px-6 py-4">Brand</th>
+                    <th className="px-6 py-4">Category</th>
+                    <th className="px-6 py-4">Type</th>
+                    <th className="px-6 py-4">Price</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {products.map((product) => (
+                    <tr
+                      key={product.id}
+                      className="hover:bg-slate-50/50 transition cursor-pointer"
+                      onDoubleClick={() => handleOpenModal(product)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <Image
+                            src={
+                              product.image[0] ||
+                              generatePlaceholderImage(product.name)
+                            }
+                            alt={product.name}
+                            width={50}
+                            height={50}
+                            onLoad={() => setImageLoaded(true)}
+                            loading="eager"
+                            className="size-12 rounded-lg object-contain bg-slate-100"
+                          />
+                          {/* <img
                           src={
                             product.image[0] ||
                             generatePlaceholderImage(product.name)
@@ -157,83 +163,84 @@ export const ProductView = ({ products, total }: ProductViewProp) => {
                           className="size-12 rounded-lg object-contain bg-slate-100"
                           alt={product.slug}
                         /> */}
-                        <div>
-                          <div className="font-bold text-slate-800 text-sm">
-                            {product.name}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {product.volume || 'Standard'}
+                          <div>
+                            <div className="font-bold text-slate-800 text-sm">
+                              {product.name}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {product.volume || 'Standard'}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
-                        {product.category.brand
-                          ? product.category.brand.name
-                          : ''}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
-                        {product.category.name}
-                      </span>
-                    </td>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
+                          {product.category.brand
+                            ? product.category.brand.name
+                            : ''}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
+                          {product.category.name}
+                        </span>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
-                        {product.type}
-                      </span>
-                    </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2.5 py-1 rounded-md text-xs font-bold capitalize bg-orange-50 text-orange-700 border border-orange-100">
+                          {product.type}
+                        </span>
+                      </td>
 
-                    <td className="px-6 py-4 font-mono text-sm font-semibold text-slate-700">
-                      ${product.price.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleOpenModal(product)}
-                          className="p-2 text-slate-400 hover:text-primary-600"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          disabled={deletingId === product.id}
-                          className="p-2 text-slate-400 hover:text-red-600 transition-colors disabled:opacity-50"
-                          title="Delete"
-                        >
-                          {deletingId === product.id ? (
-                            <Loader2
-                              size={16}
-                              className="animate-spin text-red-600"
-                            />
-                          ) : (
-                            <Trash2 size={16} />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="px-6 py-4 font-mono text-sm font-semibold text-slate-700">
+                        ${product.price.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenModal(product)}
+                            className="p-2 text-slate-400 hover:text-primary-600"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            disabled={deletingId === product.id}
+                            className="p-2 text-slate-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                            title="Delete"
+                          >
+                            {deletingId === product.id ? (
+                              <Loader2
+                                size={16}
+                                className="animate-spin text-red-600"
+                              />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
 
-                {filteredProducts.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-slate-400"
-                    >
-                      {products.length === 0
-                        ? 'No products found. Click "Add Product" to create one.'
-                        : 'No products match your search.'}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  {products.length === 0 && !isLoading && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-6 py-12 text-center text-slate-400"
+                      >
+                        {searchQuery
+                          ? 'No products match your search.'
+                          : 'No products found. Click "Add Product" to create one.'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
 
-          {filteredProducts.length > 0 && (
+          {products.length > 0 && (
             <div className="flex flex-col gap-4 px-6 py-4 border-t border-slate-100 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3 text-sm text-slate-500">
                 <span>

@@ -21,11 +21,10 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 886) {
-        setMobileMenuOpen(false) // Mobile: Auto close
-      } else {
-        setMobileMenuOpen(true) // Desktop: Auto open
+      if (window.innerWidth >= 886) {
+        setMobileMenuOpen(false) // Close mobile menu on desktop
       }
+      // Don't auto-close on mobile resize (keyboard open/close)
     }
 
     // Set initial state on mount
@@ -104,7 +103,7 @@ const Navbar: React.FC = () => {
           <div className="px-4 py-4 space-y-2">
             {/* Mobile Search Box */}
             <div className="pb-3 border-b border-slate-100 mb-3">
-              <SearchBox setMobileMenu={setMobileMenuOpen} />
+              <SearchBox setMobileMenu={setMobileMenuOpen} closeOnEscape={false} />
             </div>
 
             <Link

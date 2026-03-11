@@ -22,7 +22,10 @@ const productInclude = {
 
 // Build search conditions for query and count
 const buildSearchWhere = (query: string): Prisma.ProductWhereInput => ({
-  OR: [{ volume: { contains: query, mode: 'insensitive' } }],
+  OR: [
+    { volume: { contains: query, mode: 'insensitive' } },
+    { name: { startsWith: query, mode: 'insensitive' } },
+  ],
 })
 
 // Sort products: by volume (numeric asc), then by volume string

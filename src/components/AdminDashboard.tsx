@@ -1,6 +1,5 @@
 'use client'
 
-import { getProducts } from '@/services/productService'
 import { useQuery } from '@tanstack/react-query'
 import {
   Box,
@@ -90,25 +89,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
   const handleLogout = async () => {
     await signOut({ redirect: true, callbackUrl: '/login' })
-  }
-
-  const { data: productsData, isLoading } = useQuery({
-    queryKey: ['products', 'all'],
-    queryFn: () => getProducts(100, 0),
-    enabled: user !== null,
-  })
-
-  const products = productsData?.products || []
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Loader2 className="animate-spin w-8 h-8" />
-          <span className="text-sm font-medium">Loading...</span>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -225,12 +205,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               </div>
             }
           >
-            {activeTab === 'products' && (
-              <ProductView
-                products={products}
-                total={productsData?.total}
-              />
-            )}
+            {activeTab === 'products' && <ProductView />}
             {activeTab === 'categories' && <CategoryView />}
             {activeTab === 'videos' && <VideoView />}
             {activeTab === 'settings' && <SettingsView />}
