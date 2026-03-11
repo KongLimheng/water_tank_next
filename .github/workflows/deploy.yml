@@ -37,34 +37,83 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: root
           password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script_stop: true
           script: |
+            #!/bin/bash
+            set -e
+
+            echo "=== Loading environment ==="
+
+            # Method 1: Use env command to get login shell environment
+            if [ -f /etc/environment ]; then
+              set -a
+              source /etc/environment
+              set +a
+            fi
+
+            # Method 2: Load bashrc for interactive commands
+            if [ -f ~/.bashrc ]; then
+              source ~/.bashrc
+            fi
+
+            # Method 3: Load profile
+            if [ -f ~/.profile ]; then
+              source ~/.profile
+            fi
+
+            # Method 4: Load NVM if exists
+            if [ -d "$HOME/.nvm" ]; then
+              export NVM_DIR="$HOME/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            fi
+
+            # Method 5: Add common paths
+            export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:$HOME/.npm-global/bin:$HOME/node_modules/.bin:$PATH"
+
+            echo "=== Debug info ==="
+            echo "User: $(whoami)"
+            echo "Home: $HOME"
+            echo "Node: $(which node 2>/dev/null || echo 'not found')"
+            echo "NPM: $(which npm 2>/dev/null || echo 'not found')"
+            echo "NPX: $(which npx 2>/dev/null || echo 'not found')"
+            echo "PM2: $(which pm2 2>/dev/null || echo 'not found')"
+            echo "PATH: $PATH"
+            echo "=================="
+
             cd /var/www/water_tank-app
 
             # Pull latest changes
             git pull origin main
 
-            # Create .env file from GitHub Secrets (overwrites)
+            # Create .env file from GitHub Secrets
             cat > .env << EOF
-            DATABASE_URL=${{ env.DATABASE_URL }}
-            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
             NODE_ENV=production
             PORT=3000
             EOF
 
             # Install production dependencies
+            echo "Installing dependencies..."
             npm ci --production
 
             # Run database migrations
+            echo "Running migrations..."
             npx prisma migrate deploy
 
             # Build Next.js
+            echo "Building Next.js..."
             npm run build
 
             # Restart PM2 application
+            echo "Restarting PM2..."
             pm2 restart water_tank-app
 
             # Save PM2 process list
             pm2 save
 
             # Show PM2 status
+            echo "=== Deployment Complete ==="
             pm2 list
