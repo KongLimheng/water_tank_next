@@ -19,7 +19,18 @@ const nextConfig = {
         protocol: 'http',
         hostname: '**',
       },
+      {
+        protocol: 'https',
+        hostname: 'fademanufacture.com',
+        pathname: '/uploads/**', // Allows all paths under uploads
+      },
+      {
+        protocol: 'http',
+        hostname: 'fademanufacture.com',
+        pathname: '/uploads/**', // Also allow HTTP for development
+      },
     ],
+    unoptimized: process.env.NODE_ENV === 'development',
   },
   // Experimental features if needed, but standard 13/14/15 is stable
   typescript: {
