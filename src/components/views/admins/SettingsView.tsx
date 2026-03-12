@@ -105,6 +105,14 @@ export const SettingsView = () => {
   )
   const hasLoadedInitialValues = useRef(false)
 
+  // Ref to track dirty state for keyboard shortcut
+  const isDirtyRef = useRef(false)
+
+  // Update dirty state ref whenever form state changes
+  useEffect(() => {
+    isDirtyRef.current = isRHFDirty
+  }, [isRHFDirty])
+
   // Check if form is dirty - use RHF's built-in tracking as primary source
   useEffect(() => {
     // Once initial values are loaded, also compare with watched values
@@ -365,42 +373,42 @@ export const SettingsView = () => {
     }
   }
 
-  console.log(
-    `isSaving: ${isSaving}, isRHFDirty: ${isRHFDirty}, hasSubmitted: ${hasSubmitted}, isInitialLoading: ${isInitialLoading}`,
-  )
-
   // Keyboard shortcut: Ctrl+S to save
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const isCtrlOrMeta = e.ctrlKey || e.metaKey
       if (isCtrlOrMeta && e.key === 's') {
         e.preventDefault()
+        // Use ref for reliable dirty state tracking
         if (
-          isRHFDirty &&
+          isDirtyRef.current &&
           !isLoading &&
           !isSaving &&
           !hasSubmitted &&
           !isInitialLoading
         ) {
           handleSubmit(onSubmit)()
+        } else if (!isDirtyRef.current) {
+          toast.warning('No changes to save')
+        } else if (isSaving || isLoading) {
+          toast.warning('Already saving...')
         }
       }
     },
     [
-      isRHFDirty,
       isLoading,
       isSaving,
       hasSubmitted,
+      isInitialLoading,
       handleSubmit,
       onSubmit,
-      isInitialLoading,
     ],
   )
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keydown', handleKeyDown)
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleKeyDown])
 
@@ -432,43 +440,48 @@ export const SettingsView = () => {
           className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden`}
         >
           {/* --- Tabs Navigation --- */}
-          <div className="flex border-b border-slate-200 bg-slate-50">
-            <button
-              type="button"
-              onClick={() => setActiveTab('contact')}
-              className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold transition-colors ${
-                activeTab === 'contact'
-                  ? 'bg-white text-primary-600 border-b-2 border-primary-600'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <Phone size={18} />
-              Contact Details
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('banners')}
-              className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold transition-colors ${
-                activeTab === 'banners'
-                  ? 'bg-white text-primary-600 border-b-2 border-primary-600'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <ImageIcon size={18} />
-              Promotion Banners
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('about')}
-              className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold transition-colors ${
-                activeTab === 'about'
-                  ? 'bg-white text-primary-600 border-b-2 border-primary-600'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <User size={18} />
-              About Us
-            </button>
+          <div className="border-b border-slate-200 bg-slate-50 overflow-x-auto scrollbar-hide -mx-1 sm:mx-0">
+            <div className="flex min-w-max">
+              <button
+                type="button"
+                onClick={() => setActiveTab('contact')}
+                className={`md:flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-4 text-sm font-bold transition-colors whitespace-nowrap flex-shrink-0 ${
+                  activeTab === 'contact'
+                    ? 'bg-white text-primary-600 border-b-2 border-primary-600'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <Phone size={18} />
+                <span className="hidden sm:inline">Contact Details</span>
+                <span className="sm:hidden">Contact</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('banners')}
+                className={`md:flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-4 text-sm font-bold transition-colors whitespace-nowrap flex-shrink-0 ${
+                  activeTab === 'banners'
+                    ? 'bg-white text-primary-600 border-b-2 border-primary-600'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <ImageIcon size={18} />
+                <span className="hidden sm:inline">Promotion Banners</span>
+                <span className="sm:hidden">Banners</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('about')}
+                className={`md:flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-4 text-sm font-bold transition-colors whitespace-nowrap flex-shrink-0 ${
+                  activeTab === 'about'
+                    ? 'bg-white text-primary-600 border-b-2 border-primary-600'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <User size={18} />
+                <span className="hidden sm:inline">About Us</span>
+                <span className="sm:hidden">About</span>
+              </button>
+            </div>
           </div>
 
           {/* --- Tab Content --- */}
@@ -541,8 +554,11 @@ export const SettingsView = () => {
                 </div>
                 <div className="flex flex-col gap-4">
                   {socialFields.map((social, index) => (
-                    <div className="flex gap-4" key={index}>
-                      <div className="size-16 shrink-0 bg-slate-200 rounded-full overflow-hidden relative group border border-slate-300">
+                    <div
+                      className="flex gap-4 justify-center items-center"
+                      key={index}
+                    >
+                      <div className="size-10 md:size-16 shrink-0 bg-slate-200 rounded-full overflow-hidden relative group border border-slate-300">
                         {social.image ? (
                           <Image
                             src={social.image}

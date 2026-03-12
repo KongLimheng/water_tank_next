@@ -20,7 +20,7 @@ export default function CertificatesSection({
         />
       </div>
 
-      <div className="text-center text-lg lg:text-2xl font-bold text-gray-800 mb-8 border-rose-500 border-2  p-2 rounded-md">
+      <div className="text-center text-[14px] lg:text-2xl font-bold text-gray-800 mb-8 border-rose-500 border-2 p-1 lg:p-2 rounded lg:rounded-md">
         Quality & Certification
       </div>
 

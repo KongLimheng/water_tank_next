@@ -1,9 +1,15 @@
 'use client'
 
+import { sanitizeKhmerText } from '@/lib/utils'
 import Color from '@tiptap/extension-color'
 import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
-import { EditorContent, useEditor } from '@tiptap/react'
+import {
+  EditorContent,
+  Extension,
+  textInputRule,
+  useEditor,
+} from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {
   AlignCenter,
@@ -87,6 +93,21 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     }
   }, [showColorPicker])
 
+  const KhmerFix = Extension.create({
+    name: 'khmerFix',
+
+    addInputRules() {
+      return [
+        // This rule looks for: អ (17A2) + ុ (17BB) + ី (17B8)
+        // And replaces it with: អ (17A2) + ៊ (17CA) + ី (17B8)
+        textInputRule({
+          find: /\u17A2\u17BB\u17B8$/,
+          replace: '\u17A2\u17CA\u17B8',
+        }),
+      ]
+    },
+  })
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -95,11 +116,14 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       }),
       Color,
       TextStyle,
+      KhmerFix,
     ],
     content: value,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML())
+      const cleanHTML = sanitizeKhmerText(editor.getHTML())
+
+      onChange(cleanHTML)
     },
     onFocus: () => setIsFocused(true),
     onBlur: () => setIsFocused(false),
@@ -343,8 +367,15 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       <div className="prose prose-sm max-w-none flex-1 overflow-auto">
         <EditorContent
           editor={editor}
-          className="px-3 py-2 min-h-[150px] focus:outline-none text-sm max-h-[254px]"
+          className="px-3 py-2 min-h-[150px] focus:outline-none text-sm max-h-[254px] khmer-text whitespace-pre-wrap"
           placeholder={placeholder}
+          style={{
+            WebkitFontFeatureSettings: '"liga" 0, "kern" 0, "calt" 0, "clig" 0',
+            fontFeatureSettings: '"liga" 0, "kern" 0, "calt" 0, "clig" 0',
+            WebkitTextSizeAdjust: '100%',
+            textSizeAdjust: '100%',
+            unicodeBidi: 'plaintext',
+          }}
         />
       </div>
     </div>

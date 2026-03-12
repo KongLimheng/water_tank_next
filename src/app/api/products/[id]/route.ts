@@ -1,9 +1,24 @@
+import { auth } from '@/lib/auth'
 import { cleanImage } from '@/lib/cleanImage'
 import { saveFile } from '@/lib/fileUpload'
 import { prisma } from '@/lib/prismaClient'
 import { unlink } from 'fs/promises'
 import { NextResponse } from 'next/server'
 import path from 'path'
+
+/**
+ * Helper to check if the current user is an admin
+ */
+async function requireAdmin() {
+  const session = await auth()
+  if (!session?.user) {
+    return { authorized: false, response: NextResponse.json({ msg: 'Unauthorized' }, { status: 401 }) }
+  }
+  if (session.user.role?.toLowerCase() !== 'admin') {
+    return { authorized: false, response: NextResponse.json({ msg: 'Forbidden' }, { status: 403 }) }
+  }
+  return { authorized: true, response: null }
+}
 
 export async function GET(
   req: Request,

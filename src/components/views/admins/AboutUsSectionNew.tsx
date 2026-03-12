@@ -341,14 +341,14 @@ function AboutUsSectionInner() {
                       <label className="block text-sm font-bold text-slate-700 mb-1.5">
                         Image
                       </label>
-                      <div className="w-full h-80 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
+                      <div className="w-full h-60 md:h-80 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                         {watchedItem?.image ? (
                           <Image
                             src={watchedItem?.image}
                             alt={`Certificate ${itemIndex + 1}`}
                             className="size-full object-contain"
                             fill
-                            sizes="( max-width: 768px ) 100vw, 25vw"
+                            sizes="(max-width: 768px) 100vw, 25vw"
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full text-slate-400">
