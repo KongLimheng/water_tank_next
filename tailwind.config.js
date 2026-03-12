@@ -4,7 +4,27 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif', 'Khmer'],
+        sans: [
+          'Inter',
+          'Kantumruy Pro',
+          'Battambang',
+          'Hanuman',
+          'Khmer OS',
+          'Khmer',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
+        khmer: [
+          'kantumruy',
+          'Battambang',
+          'Hanuman',
+          'Khmer OS',
+          'Khmer',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
       },
       colors: {
         primary: {

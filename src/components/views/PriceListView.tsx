@@ -91,7 +91,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
         <div className="lg:hidden text-center mb-4">
           <span
             className={`inline-block px-8 py-2 text-white text-2xl font-black rounded-xl shadow-lg ${
-              isOther ? 'bg-slate-500' : 'bg-red-600'
+              isOther ? 'bg-slate-500 hidden' : 'bg-red-600'
             }`}
           >
             {isOther ? 'General Products' : `TYPE ${type}`}
@@ -153,9 +153,9 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
             generatePlaceholderImage(products[0]?.category.name || 'Water Tank')
           }
           alt="Product"
-          className="w-2/3 h-auto object-contain rounded"
+          className="w-full h-auto object-contain rounded"
           width={1920}
-          height={440}
+          height={240}
           loading="eager"
         />
       </div>

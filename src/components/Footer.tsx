@@ -9,7 +9,7 @@ export default function Footer() {
   const { settings, isLoading: isSettingsLoading } = useSettings()
 
   return (
-    <footer className="pt-10 pb-8 text-black font-sans">
+    <footer className="pt-10 pb-8 font-sans">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Contact Header Section */}
         {isSettingsLoading ? (
@@ -24,7 +24,7 @@ export default function Footer() {
         ) : settings ? (
           <>
             <div className="mb-8">
-              <h3 className="text-xl md:text-2xl xl:text-4xl font-bold mb-6 font-khmer">
+              <h3 className="text-xl md:text-2xl xl:text-4xl font-bold mb-6 font-sans">
                 លោកអ្នកអាចទំនាក់ទំនងយើងតាមរយៈ៖
               </h3>
               <div className="space-y-4 ">

@@ -14,6 +14,111 @@ body {
   min-height: 100vh;
 }
 
+/* Hide scrollbar but allow scrolling (for tabs) */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Ensure all text elements inherit the font */
+*,
+*::before,
+*::after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* CRITICAL: Global font feature reset for Khmer */
+html {
+  -webkit-font-feature-settings:
+    'liga' 0,
+    'kern' 0,
+    'calt' 0,
+    'clig' 0 !important;
+  font-feature-settings:
+    'liga' 0,
+    'kern' 0,
+    'calt' 0,
+    'clig' 0 !important;
+}
+
+/* Khmer-specific text display - iOS Safari Fix */
+/* Use CSS variables from Next.js font optimization */
+.khmer-text,
+.khmer-text *,
+.prose-sm h1,
+.prose-sm h2,
+.prose-sm h3,
+.prose-sm p,
+.prose-sm,
+.ProseMirror,
+.ProseMirror *,
+.ProseMirror p,
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3 {
+  font-family:
+    var(--font-kantumruy_pro), var(--font-battambang), var(--font-hanuman),
+    'Khmer OS', 'Khmer', sans-serif !important;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Critical: Disable font features that break Khmer on iOS */
+  -webkit-font-feature-settings:
+    'liga' 0,
+    'kern' 0,
+    'calt' 0,
+    'clig' 0 !important;
+  font-feature-settings:
+    'liga' 0,
+    'kern' 0,
+    'calt' 0,
+    'clig' 0 !important;
+  text-rendering: optimizeLegibility !important;
+  letter-spacing: normal;
+  word-spacing: normal;
+  unicode-bidi: plaintext;
+}
+
+/* iOS Safari specific fix - CRITICAL */
+@supports (-webkit-touch-callout: none) {
+  html,
+  body,
+  .khmer-text,
+  .khmer-text *,
+  .prose-sm h1,
+  .prose-sm h2,
+  .prose-sm h3,
+  .prose-sm p,
+  .prose-sm,
+  .ProseMirror,
+  .ProseMirror *,
+  .ProseMirror p,
+  .ProseMirror h1,
+  .ProseMirror h2,
+  .ProseMirror h3 {
+    font-family:
+      var(--font-kantumruy_pro), var(--font-battambang), var(--font-hanuman),
+      sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-feature-settings:
+      'liga' 0,
+      'kern' 0,
+      'calt' 0,
+      'clig' 0 !important;
+    font-feature-settings:
+      'liga' 0,
+      'kern' 0,
+      'calt' 0,
+      'clig' 0 !important;
+  }
+}
+
 img {
   color-interpolation-filters: sRGB;
   -webkit-font-smoothing: antialiased;
@@ -53,6 +158,13 @@ img {
 
 .prose-sm p {
   margin: 0.75rem 0;
+  font-family:
+    var(--font-kantumruy_pro), var(--font-battambang), var(--font-hanuman),
+    'Khmer OS', 'Khmer', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  unicode-bidi: plaintext;
 }
 
 .prose-sm h1,
@@ -60,6 +172,13 @@ img {
 .prose-sm h3 {
   margin: 1rem 0 0.5rem 0;
   font-weight: 600;
+  font-family:
+    var(--font-kantumruy_pro), var(--font-battambang), var(--font-hanuman),
+    'Khmer OS', 'Khmer', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  unicode-bidi: plaintext;
 }
 
 .prose-sm h1 {
@@ -107,4 +226,41 @@ img {
   /* Ensure the editor takes full width and has a minimum height */
   width: 100%;
   min-height: 150px;
+  /* Apply Khmer font to editor content */
+  font-family:
+    var(--font-kantumruy_pro), var(--font-battambang), var(--font-hanuman),
+    'Khmer OS', 'Khmer', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-font-feature-settings:
+    'liga' 0,
+    'kern' 0,
+    'calt' 0,
+    'clig' 0 !important;
+  font-feature-settings:
+    'liga' 0,
+    'kern' 0,
+    'calt' 0,
+    'clig' 0 !important;
+}
+
+/* iOS Safari fix for ProseMirror */
+@supports (-webkit-touch-callout: none) {
+  .ProseMirror,
+  .ProseMirror * {
+    font-family:
+      var(--font-kantumruy_pro), var(--font-battambang), var(--font-hanuman),
+      sans-serif !important;
+    -webkit-font-feature-settings:
+      'liga' 0,
+      'kern' 0,
+      'calt' 0,
+      'clig' 0 !important;
+    font-feature-settings:
+      'liga' 0,
+      'kern' 0,
+      'calt' 0,
+      'clig' 0 !important;
+  }
 }

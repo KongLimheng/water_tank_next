@@ -59,8 +59,8 @@ const Navbar: React.FC = () => {
               <h1 className="text-xs lg:text-lg font-bold text-slate-900 tracking-tight truncate">
                 Fa De Manufacture Co., LTD.
               </h1>
-              <p className="text-[8px] lg:text-[10px] text-slate-500 font-medium">
-                ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ
+              <p className="text-[8px] lg:text-[10px] text-slate-500 font-medium khmer-text">
+                ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអ៊ីណុក & ជ័រគ្រប់ប្រភេទ
               </p>
             </div>
           </Link>
@@ -103,7 +103,10 @@ const Navbar: React.FC = () => {
           <div className="px-4 py-4 space-y-2">
             {/* Mobile Search Box */}
             <div className="pb-3 border-b border-slate-100 mb-3">
-              <SearchBox setMobileMenu={setMobileMenuOpen} closeOnEscape={false} />
+              <SearchBox
+                setMobileMenu={setMobileMenuOpen}
+                closeOnEscape={false}
+              />
             </div>
 
             <Link

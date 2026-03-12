@@ -1,9 +1,9 @@
+import { useVideoMutations } from '@/hooks/useVideoMutations'
+import { getVideos } from '@/services/videoService'
+import { Video } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import { Edit, Plus, Save, Trash2, X } from 'lucide-react'
 import React, { useState } from 'react'
-import { useVideoMutations } from '../../../hooks/useVideoMutations'
-import { getVideos } from '../../../services/videoService'
-import { Video } from '../../../types'
 import { ConfirmModal } from '../../ConfirmModal'
 
 export const VideoView = () => {
