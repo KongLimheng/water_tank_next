@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Image from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
 import '../../styles/image-skeleton.css'
+import { OptimizedImage } from '../ui/OptimizedImage'
 
 interface ProductImageGalleryProps {
   images: string[]
@@ -103,11 +104,17 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   if (images.length === 0) {
     return (
       <div className="image-wrapper relative bg-gray-50 rounded-2xl p-6 flex items-center justify-center">
-        <img
+        {/* <img
           src={selectedImage}
           alt={name}
           className="object-contain rounded-xl max-h-full"
           loading="lazy"
+        /> */}
+
+        <OptimizedImage
+          src={selectedImage}
+          alt={name}
+          className="object-contain rounded-xl max-h-full"
         />
       </div>
     )
@@ -126,16 +133,10 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 selectedImage === img ? 'border-indigo-600' : 'border-gray-200'
               }`}
             >
-              {/* <img
-                src={img}
-                alt={`${name} ${index}`}
-                loading="lazy"
-                className="size-20 object-contain rounded-lg"
-              /> */}
               <Image
                 src={img}
                 alt={`${name} ${index}`}
-                className="size-20 object-contain rounded"
+                className="size-14 md:size-20 object-contain rounded"
                 width={80}
                 height={80}
                 onLoad={() => setImageLoaded(true)}
@@ -149,7 +150,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
         {/* Main Image */}
         <div
-          className="relative image-wrapper flex-1 flex items-center justify-center bg-gray-50 rounded-2xl p-6"
+          className="relative image-wrapper flex-1 flex items-center justify-center bg-gray-50 rounded lg:rounded-2xl p-6"
           onMouseMove={handleMouseMove}
           onClick={handleMainImageClick}
           onDoubleClick={handleMainImageDoubleClick}

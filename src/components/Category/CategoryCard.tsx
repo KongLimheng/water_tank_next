@@ -1,7 +1,7 @@
 import { Category } from '@/types'
 import { ArrowRight, Image as ImageIcon } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
+import { OptimizedImage } from '../ui/OptimizedImage'
 
 interface CategoryCardProps {
   category: Category
@@ -14,18 +14,15 @@ const CategoryCard = ({ category }: CategoryCardProps) => {
   return (
     <Link
       href={`/shop?category=${category.id}`}
-      className="group flex flex-col h-full  bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:border-primary-100 transition-all duration-300"
+      className="group flex flex-col h-full  bg-white rounded-lg lg:rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:border-primary-100 transition-all duration-300"
     >
       {/* Image Section */}
       <div className="relative h-64 w-full overflow-hidden bg-slate-50 flex items-center justify-center">
         {hasImage ? (
-          <Image
+          <OptimizedImage
             src={category.image!} // Ensure this path matches your server static serve
             alt={category.name}
             className="size-full object-contain transition-transform duration-700 group-hover:scale-110"
-            loading="eager"
-            width={400}
-            height={400}
           />
         ) : (
           <div className="size-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400">
@@ -37,7 +34,7 @@ const CategoryCard = ({ category }: CategoryCardProps) => {
         {category.brand && category.brand.name.toLowerCase() !== 'no' && (
           <div className="absolute top-5 left-5">
             <span
-              className={`px-3 py-1 rounded-full text-md md:text-[20px] font-bold uppercase tracking-wider shadow-sm  bg-green-100/70 text-primary-700
+              className={`px-3 py-1 rounded-full text-sm md:text-[20px] font-bold uppercase tracking-wider shadow-sm  bg-green-100/70 text-primary-700
               
               `}
             >

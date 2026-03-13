@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable standalone output for Docker
-  // output: 'standalone',
   // Allow loading images from existing uploads folder (if served securely) or external sources
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -30,7 +28,7 @@ const nextConfig = {
         pathname: '/uploads/**', // Also allow HTTP for development
       },
     ],
-    unoptimized: process.env.NODE_ENV === 'development',
+    // unoptimized: process.env.NODE_ENV === 'development',
   },
   // Experimental features if needed, but standard 13/14/15 is stable
   typescript: {

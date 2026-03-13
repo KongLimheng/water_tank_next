@@ -33,8 +33,8 @@ import {
 import { toast } from 'react-toastify'
 
 // Import the AboutUsSection component
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { useSettingMutations } from '@/hooks/useSettingMutations'
-import Image from 'next/image'
 import AboutUsSection from './AboutUsSectionNew'
 
 // Define the shape of our form
@@ -560,7 +560,7 @@ export const SettingsView = () => {
                     >
                       <div className="size-10 md:size-16 shrink-0 bg-slate-200 rounded-full overflow-hidden relative group border border-slate-300">
                         {social.image ? (
-                          <Image
+                          <OptimizedImage
                             src={social.image}
                             alt="Banner"
                             className="size-full object-contain aspect-square"
@@ -798,7 +798,7 @@ export const SettingsView = () => {
                           {/* Image Preview / Upload */}
                           <div className="w-full h-40 shrink-0 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                             {field.banner_image ? (
-                              <img
+                              <OptimizedImage
                                 src={field.banner_image}
                                 alt="Banner"
                                 className="size-full object-cover"

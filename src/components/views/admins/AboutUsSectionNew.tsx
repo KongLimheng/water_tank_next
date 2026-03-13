@@ -1,8 +1,8 @@
 'use client'
 
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { AboutUsData, BannerItem } from '@/types'
 import { ImageIcon, Plus, Trash2, UploadCloud } from 'lucide-react'
-import Image from 'next/image'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { TipTapEditor } from '../../TipTapEditor'
@@ -93,7 +93,9 @@ function AboutUsSectionInner() {
       const file = files[0]
       const previewUrl = URL.createObjectURL(file)
       setValue(`aboutUs.section3.items.${itemIndex}.image`, previewUrl)
-      setValue(`aboutUs.section3.items.${itemIndex}.imageFile`, file)
+      setValue(`aboutUs.section3.items.${itemIndex}.imageFile`, file, {
+        shouldDirty: true,
+      })
     }
   }
 
@@ -131,11 +133,10 @@ function AboutUsSectionInner() {
               </label>
               <div className="w-full h-64 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                 {watchedAboutUs?.section1?.image ? (
-                  <Image
+                  <OptimizedImage
                     src={watchedAboutUs?.section1?.image}
                     alt="Section 1"
                     className="size-full object-cover"
-                    fill
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-slate-400">
@@ -212,12 +213,11 @@ function AboutUsSectionInner() {
                       </span>
                       <div className="w-64 aspect-square bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                         {watchedItem?.image ? (
-                          <Image
+                          <OptimizedImage
                             src={watchedItem?.image}
                             alt={`Item ${itemIndex + 1}`}
                             className="size-full object-cover"
-                            fill
-                            sizes="( max-width: 768px ) 50vw, 33vw"
+                            // sizes="( max-width: 768px ) 50vw, 33vw"
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full text-slate-400">
@@ -343,12 +343,11 @@ function AboutUsSectionInner() {
                       </label>
                       <div className="w-full h-60 md:h-80 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
                         {watchedItem?.image ? (
-                          <Image
+                          <OptimizedImage
                             src={watchedItem?.image}
                             alt={`Certificate ${itemIndex + 1}`}
                             className="size-full object-contain"
-                            fill
-                            sizes="(max-width: 768px) 100vw, 25vw"
+                            // sizes="(max-width: 768px) 100vw, 25vw"
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full text-slate-400">

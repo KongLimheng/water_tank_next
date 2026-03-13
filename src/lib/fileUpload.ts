@@ -1,85 +1,132 @@
 import { execFile } from 'child_process'
-import { chown, mkdir, writeFile } from 'fs/promises'
+import { chown, mkdir, stat, writeFile } from 'fs/promises'
 import path from 'path'
+import sharp from 'sharp'
 import { promisify } from 'util'
 
 const execFileAsync = promisify(execFile)
 
-export async function saveFile(file: File, folder: string): Promise<string> {
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
+const IMAGE_CONFIG = {
+  maxFileSize: 5 * 1024 * 1024, // 5MB
+  allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
+  maxDimensions: { width: 4000, height: 4000 },
+  minDimensions: { width: 100, height: 100 },
+  outputQuality: 85,
+  outputFormat: 'jpeg' as 'jpeg' | 'png' | 'webp',
+}
 
-  const relativeUploadDir = `/uploads/${folder}`
-  const uploadDir = path.join(process.cwd(), 'public', relativeUploadDir)
+export async function saveFile(file: File, folder: string): Promise<string> {
+  const startTime = Date.now()
 
   try {
-    await mkdir(uploadDir, { recursive: true })
-  } catch (e) {
-    // Ignore error if directory exists
-    console.error('Error creating directory', e)
-  }
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
 
-  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+    const relativeUploadDir = `/uploads/${folder}`
+    const uploadDir = path.join(process.cwd(), 'public', relativeUploadDir)
 
-  // Enhanced filename sanitization
-  const sanitizeFilename = (filename: string): string => {
-    // Remove extension first for processing
-    const ext = path.extname(filename).toLowerCase()
-    const basename = path.basename(filename, ext)
-
-    // Multiple sanitization steps
-    let sanitized = basename
-
-    // 1. Replace sequences of underscores or hyphens with a single one
-    sanitized = sanitized.replace(/_+/g, '_').replace(/-+/g, '-')
-
-    // 2. Remove leading/trailing special characters
-    sanitized = sanitized.replace(/^[_\-.]+|[_\-.]+$/g, '')
-
-    // 3. Remove any remaining non-alphanumeric except hyphen and underscore
-    // but keep spaces and some common symbols if needed
-    sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-_.]/g, '')
-
-    // 4. Replace spaces with hyphens
-    sanitized = sanitized.replace(/\s+/g, '-')
-
-    // 5. If name becomes empty after sanitization, use a default
-    if (!sanitized.trim()) {
-      sanitized = 'file'
-    }
-
-    // 6. Limit length to avoid issues with filesystems
-    sanitized = sanitized.substring(0, 100)
-
-    return sanitized + ext
-  }
-
-  const sanitizedName = sanitizeFilename(file.name)
-  const nameWithoutExt = path.parse(sanitizedName).name
-  const ext = path.extname(sanitizedName).toLowerCase()
-
-  // Handle edge case where name might still have only underscores/hyphens
-  let cleanNameWithoutExt = nameWithoutExt
-  if (!cleanNameWithoutExt.replace(/[_-]/g, '').trim()) {
-    cleanNameWithoutExt = 'file'
-  }
-
-  const filename = `${cleanNameWithoutExt}-${uniqueSuffix}${ext}`
-  const filepath = path.join(uploadDir, filename)
-
-  await writeFile(filepath, buffer)
-
-  if (process.env.NODE_ENV === 'production') {
     try {
-      const { stdout: uidOut } = await execFileAsync('id', ['-u', 'www-data'])
-      const { stdout: gidOut } = await execFileAsync('id', ['-g', 'www-data'])
-      const uid = parseInt(uidOut.trim(), 10)
-      const gid = parseInt(gidOut.trim(), 10)
-      await chown(filepath, uid, gid)
-    } catch (err) {
-      console.error('chown failed', err)
+      await mkdir(uploadDir, { recursive: true })
+    } catch (e) {
+      // Ignore error if directory exists
+      console.error('Error creating directory', e)
     }
-  }
 
-  return path.join(relativeUploadDir, filename).replace(/\\/g, '/')
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+
+    const sanitizedName = sanitizeFilename(file.name)
+    const nameWithoutExt = path.parse(sanitizedName).name
+    const ext = path.extname(sanitizedName).toLowerCase()
+
+    // Handle edge case where name might still have only underscores/hyphens
+    let cleanNameWithoutExt = nameWithoutExt
+    if (!cleanNameWithoutExt.replace(/[_-]/g, '').trim()) {
+      cleanNameWithoutExt = 'file'
+    }
+
+    const filename = `${cleanNameWithoutExt}-${uniqueSuffix}${ext}`
+    const filepath = path.join(uploadDir, filename)
+
+    // ✅ VALIDATE IMAGE BEFORE SAVING (prevents bad cache)
+    if (file.type.startsWith('image/')) {
+      try {
+        const metadata = await sharp(buffer).metadata()
+        if (!metadata.width || !metadata.height) {
+          throw new Error('Invalid image dimensions')
+        }
+      } catch (err) {
+        console.error('Image validation failed:', err)
+        throw new Error('Uploaded file is not a valid image')
+      }
+    }
+    console.log(`Start size: ${file.size}`)
+
+    const sharpPipeline = sharp(buffer).rotate() // Auto-rotate based on EXIF
+
+    // Optional resize
+    sharpPipeline.resize({
+      width: 1920,
+      fit: 'inside', // Maintain aspect ratio
+      withoutEnlargement: true, // Don't upscale
+    })
+
+    // Convert and compress
+    const outputOptions = {
+      quality: IMAGE_CONFIG.outputQuality,
+      progressive: true, // Better perceived loading
+      mozjpeg: true, // Better compression
+    }
+    const processedBuffer =
+      await sharpPipeline[IMAGE_CONFIG.outputFormat](outputOptions).toBuffer()
+
+    await writeFile(filepath, processedBuffer)
+    // Small delay to ensure file is fully written
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const { stdout: uidOut } = await execFileAsync('id', ['-u', 'www-data'])
+        const { stdout: gidOut } = await execFileAsync('id', ['-g', 'www-data'])
+        const uid = parseInt(uidOut.trim(), 10)
+        const gid = parseInt(gidOut.trim(), 10)
+        await chown(filepath, uid, gid)
+      } catch (err) {
+        console.error('chown failed', err)
+      }
+    }
+
+    // ✅ 12. GET FINAL FILE SIZE
+    const stats = await stat(filepath)
+
+    const uploadTime = Date.now() - startTime
+    console.log(
+      `Image uploaded in ${uploadTime}ms: ${filename} size: ${stats.size}`,
+    )
+
+    return path.join(relativeUploadDir, filename).replace(/\\/g, '/')
+  } catch (err) {
+    console.error('Upload error:', err)
+    return err instanceof Error ? err.message : 'Upload failed'
+  }
+}
+
+// Enhanced filename sanitization
+const sanitizeFilename = (filename: string): string => {
+  // Remove extension first for processing
+  const ext = path.extname(filename).toLowerCase()
+  const basename = path.basename(filename, ext)
+
+  // Multiple sanitization steps
+
+  let sanitized = basename
+    .replace(/_+/g, '_')
+    .replace(/-+/g, '-')
+    .replace(/^[_\-.]+|[_\-.]+$/g, '')
+    .replace(/[^a-zA-Z0-9\s\-_.]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 100)
+
+  if (!sanitized.trim()) sanitized = 'image'
+  return sanitized + ext
 }

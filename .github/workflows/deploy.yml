@@ -119,6 +119,11 @@ jobs:
             echo "Building Next.js..."
             npm run build
 
+            NEXT_APP_DIR="/var/www/water_tank-app"
+
+            echo "Clearing Next.js image cache..."
+            # rm -rf .next/cache/images
+
             # Restart PM2 application
             echo "Restarting PM2..."
             pm2 reload water_tank-app
