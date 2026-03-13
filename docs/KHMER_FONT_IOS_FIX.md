@@ -21,7 +21,6 @@ font-family:
   'Khmer',             /* Generic */
   sans-serif;
 ```
-
 ### 2. **Critical CSS Properties**
 
 ```css
