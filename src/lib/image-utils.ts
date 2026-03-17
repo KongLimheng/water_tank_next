@@ -11,6 +11,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 export function getImageUrl(path: string | null | undefined): string {
   if (!path) return ''
   if (path.startsWith('http')) return path
+  if (path.startsWith('blob:')) return path
   return process.env.NODE_ENV === 'production' ? `${BASE_URL}${path}` : path
 }
 

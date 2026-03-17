@@ -33,12 +33,13 @@ const ImageDragDrop = ({
   return (
     <>
       <div
-        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors ${dragActive
-          ? 'border-primary-500 bg-primary-50'
-          : previewUrls.length >= maxFiles
-            ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
-            : 'border-slate-300 hover:bg-slate-50'
-          }`}
+        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+          dragActive
+            ? 'border-primary-500 bg-primary-50'
+            : previewUrls.length >= maxFiles
+              ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+              : 'border-slate-300 hover:bg-slate-50'
+        }`}
         onDragEnter={(e) => {
           e.preventDefault()
           setDragActive(true)
