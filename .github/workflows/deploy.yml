@@ -96,8 +96,12 @@ jobs:
 
             cd /var/www/water_tank-app
 
-            # Pull latest changes
-            git pull origin main
+            # Stash any local changes before pulling (prevents conflicts)
+            git stash --include-untracked || true
+
+            # Pull latest changes (use --no-rebase to avoid conflicts)
+            git fetch origin main
+            git reset --hard origin/main
 
             # Create .env file from GitHub Secrets
             cat > .env << EOF
