@@ -1,4 +1,5 @@
 import { ProductModal } from '@/components/Product/ProductModel'
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { useProductMutations } from '@/hooks/useProductMutations'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { getCategories } from '@/services/categoryService'
@@ -6,7 +7,6 @@ import { getProducts, searchProducts } from '@/services/productService'
 import { ProductList } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import { Edit, Loader2, Plus, Trash2 } from 'lucide-react'
-import Image from 'next/image'
 import { useState } from 'react'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
@@ -140,16 +140,16 @@ export const ProductView = () => {
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <Image
+                          <OptimizedImage
                             src={
                               product.image[0] ||
                               generatePlaceholderImage(product.name)
                             }
                             alt={product.name}
-                            width={50}
-                            height={50}
-                            onLoad={() => setImageLoaded(true)}
-                            loading="eager"
+                            width={48}
+                            height={48}
+                            // onLoad={() => setImageLoaded(true)}
+                            // loading="la"
                             className="size-12 rounded-lg object-contain bg-slate-100"
                           />
                           {/* <img

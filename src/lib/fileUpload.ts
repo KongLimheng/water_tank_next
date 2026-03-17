@@ -48,21 +48,19 @@ export async function saveFile(file: File, folder: string): Promise<string> {
     const filename = `${cleanNameWithoutExt}-${uniqueSuffix}${ext}`
     const filepath = path.join(uploadDir, filename)
 
-    // ✅ VALIDATE IMAGE BEFORE SAVING (prevents bad cache)
-    if (file.type.startsWith('image/')) {
-      try {
-        const metadata = await sharp(buffer).metadata()
-        if (!metadata.width || !metadata.height) {
-          throw new Error('Invalid image dimensions')
-        }
-      } catch (err) {
-        console.error('Image validation failed:', err)
-        throw new Error('Uploaded file is not a valid image')
+    let metadata: sharp.Metadata
+    try {
+      metadata = await sharp(buffer).metadata()
+      if (!metadata.width || !metadata.height) {
+        throw new Error('Invalid image dimensions')
       }
+    } catch (err) {
+      console.error('Image validation failed:', err)
+      throw new Error('Uploaded file is not a valid image')
     }
     console.log(`Start size: ${file.size}`)
 
-    const sharpPipeline = sharp(buffer).rotate() // Auto-rotate based on EXIF
+    let sharpPipeline = sharp(buffer).rotate().toColorspace('srgb') // Auto-rotate based on EXIF
 
     // Optional resize
     sharpPipeline.resize({
@@ -71,16 +69,30 @@ export async function saveFile(file: File, folder: string): Promise<string> {
       withoutEnlargement: true, // Don't upscale
     })
 
+    if (
+      metadata.hasAlpha ||
+      file.type === 'image/png' ||
+      file.type === 'image/webp'
+    ) {
+      sharpPipeline = sharpPipeline.flatten({
+        background: { r: 255, g: 255, b: 255 }, // White background
+      })
+    }
+
     // Convert and compress
     const outputOptions = {
       quality: IMAGE_CONFIG.outputQuality,
       progressive: true, // Better perceived loading
       mozjpeg: true, // Better compression
+      chromaSubsampling: '4:2:0',
     }
-    const processedBuffer =
-      await sharpPipeline[IMAGE_CONFIG.outputFormat](outputOptions).toBuffer()
+    const processedBuffer = await sharpPipeline.jpeg(outputOptions).toBuffer()
 
     await writeFile(filepath, processedBuffer)
+
+    console.log(
+      `Optimized: ${Math.round(processedBuffer.length / 1024)}KB (${Math.round((1 - processedBuffer.length / buffer.length) * 100)}% reduction)`,
+    )
     // Small delay to ensure file is fully written
     await new Promise((resolve) => setTimeout(resolve, 100))
 
@@ -101,7 +113,7 @@ export async function saveFile(file: File, folder: string): Promise<string> {
 
     const uploadTime = Date.now() - startTime
     console.log(
-      `Image uploaded in ${uploadTime}ms: ${filename} size: ${stats.size}`,
+      `✅ Image uploaded in ${uploadTime}ms: ${filename} (${Math.round(stats.size / 1024)}KB)`,
     )
 
     return path.join(relativeUploadDir, filename).replace(/\\/g, '/')

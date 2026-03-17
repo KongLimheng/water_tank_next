@@ -8,6 +8,7 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   images: {
     qualities: [75, 90],
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         protocol: 'https',
