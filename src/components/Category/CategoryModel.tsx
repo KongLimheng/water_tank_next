@@ -2,9 +2,9 @@ import { useCategoryMutations } from '@/hooks/useCategoryMutations'
 import { Brand } from '@/services/brandService'
 import { Category } from '@/types'
 import { Camera, ImageIcon, Upload, UploadCloud, X } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { OptimizedImage } from '../ui/OptimizedImage'
 
 interface CategoryFormValues {
   name: string
@@ -141,13 +141,10 @@ export const CategoryModal: React.FC<{
               <div className="relative group">
                 <div className="size-24 rounded-full border-2 border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
                   {previewUrl ? (
-                    <Image
+                    <OptimizedImage
                       src={previewUrl}
                       alt="Preview"
                       className="size-full object-fill"
-                      loading="lazy"
-                      width={100}
-                      height={100}
                     />
                   ) : (
                     <Camera className="text-slate-300" size={32} />
@@ -214,12 +211,10 @@ export const CategoryModal: React.FC<{
 
             <div className="w-full h-40 shrink-0 bg-slate-200 rounded-lg overflow-hidden relative group border border-slate-300">
               {previewBannerUrl ? (
-                <Image
+                <OptimizedImage
                   src={previewBannerUrl}
                   alt="Price Banner"
                   className="size-full object-cover"
-                  fill
-                  loading="lazy"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-slate-400">

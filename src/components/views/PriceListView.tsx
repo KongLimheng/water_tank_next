@@ -1,8 +1,8 @@
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { ProductList } from '@/types'
 import { Package } from 'lucide-react'
-import Image from 'next/image'
 import React, { useMemo } from 'react'
+import { OptimizedImage } from '../ui/OptimizedImage'
 
 interface PriceListViewProps {
   products: ProductList[]
@@ -147,7 +147,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
     <div className="max-w-full rounded-lg mx-auto p-2 md:p-8 bg-slate-200/30 min-h-screen font-sans">
       {/* Page Header */}
       <div className="flex justify-center pb-8 relative">
-        <Image
+        <OptimizedImage
           src={
             products[0]?.category.priceBanner ||
             generatePlaceholderImage(products[0]?.category.name || 'Water Tank')
@@ -156,7 +156,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
           className="w-full h-auto object-contain rounded"
           width={1920}
           height={240}
-          loading="eager"
+          // loading="eager"
         />
       </div>
 

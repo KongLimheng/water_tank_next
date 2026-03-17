@@ -1,8 +1,12 @@
 // components/OptimizedImage.tsx
 'use client'
 
+import { getImageUrl } from '@/lib/image-utils'
 import Image from 'next/image'
 import { useState } from 'react'
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || 'https://fademanufacture.com'
 
 interface OptimizedImageProps {
   src: string
@@ -48,7 +52,7 @@ export function OptimizedImage({
 
   return (
     <Image
-      src={src}
+      src={getImageUrl(src)}
       alt={alt}
       width={width}
       height={height}

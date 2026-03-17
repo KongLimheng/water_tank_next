@@ -1,6 +1,6 @@
 import { Trash2, UploadCloud } from 'lucide-react'
-import Image from 'next/image'
 import { useState } from 'react'
+import { OptimizedImage } from './ui/OptimizedImage'
 
 interface ImageDragDropProps {
   removeImage: (idx: number) => void
@@ -113,7 +113,7 @@ const ImageDragDrop = ({
                 key={i}
                 className="relative w-20 h-20 rounded-lg overflow-hidden group border border-slate-200"
               >
-                <Image
+                <OptimizedImage
                   src={url}
                   className="w-full h-full object-contain"
                   alt="preview"

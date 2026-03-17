@@ -10,14 +10,14 @@ const nextConfig = {
     qualities: [75, 90],
     minimumCacheTTL: 60,
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
+      // {
+      //   protocol: 'https',
+      //   hostname: '**',
+      // },
+      // {
+      //   protocol: 'http',
+      //   hostname: 'localhost',
+      // },
       {
         protocol: 'https',
         hostname: 'fademanufacture.com',
@@ -25,7 +25,10 @@ const nextConfig = {
       },
       {
         protocol: 'http',
-        hostname: 'fademanufacture.com',
+        hostname:
+          process.env.NODE_ENV === 'production'
+            ? 'fademanufacture.com'
+            : 'localhost',
         pathname: '/uploads/**', // Also allow HTTP for development
       },
     ],

@@ -1,3 +1,4 @@
+import { getImageUrl } from '@/lib/image-utils'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Image from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
@@ -134,7 +135,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               }`}
             >
               <Image
-                src={img}
+                src={getImageUrl(img)}
                 alt={`${name} ${index}`}
                 className="size-14 md:size-20 object-contain rounded"
                 width={80}

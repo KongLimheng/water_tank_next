@@ -1,9 +1,9 @@
 'use client'
 
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Loader2, Search } from 'lucide-react'
-import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import ProductDetailsModal from '../components/Product/ProductDetailsModal'
@@ -109,7 +109,7 @@ const SearchResults = () => {
                 >
                   {/* Product Image */}
                   <div className="aspect-square bg-slate-50 relative overflow-hidden">
-                    <Image
+                    <OptimizedImage
                       src={
                         product.image[0] ||
                         generatePlaceholderImage(product.name)
@@ -117,7 +117,7 @@ const SearchResults = () => {
                       alt={product.name}
                       className="object-contain group-hover:scale-105 transition-transform duration-300 size-full"
                       width={400}
-                      height={400}
+                      height={200}
                     />
                   </div>
 

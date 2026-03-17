@@ -1,5 +1,6 @@
 // components/about/CertificatesSection.tsx
 import HtmlContent from '@/components/ui/HtmlContent'
+import { getImageUrl } from '@/lib/image-utils'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { AboutUsSection3Item } from '@/types'
 import { motion } from 'motion/react'
@@ -37,7 +38,10 @@ export default function CertificatesSection({
           >
             <div className="w-full aspect-[1/1.4142] p-2 bg-white relative">
               <Image
-                src={item.image || generatePlaceholderImage('Certificate')}
+                src={
+                  getImageUrl(item.image) ||
+                  generatePlaceholderImage('Certificate')
+                }
                 alt={item.title || 'Certificate'}
                 fill
                 className="object-contain"

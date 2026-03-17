@@ -108,6 +108,7 @@ jobs:
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
             NODE_ENV=production
+            NEXT_PUBLIC_BASE_URL=https://fademanufacture.com
             PORT=3000
             EOF
 
@@ -126,7 +127,7 @@ jobs:
             NEXT_APP_DIR="/var/www/water_tank-app"
 
             echo "Clearing Next.js image cache..."
-            # rm -rf .next/cache/images
+            rm -rf .next/cache/images
 
             # Restart PM2 application
             echo "Restarting PM2..."

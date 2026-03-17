@@ -1,12 +1,12 @@
 'use client'
 
 import { MenuIcon } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import Logo from '../../public/logo.jpg' // Check path
 import SearchBox from './SearchBox'
+import { OptimizedImage } from './ui/OptimizedImage'
 
 const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -46,11 +46,10 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 cursor-pointer">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center  justify-center shadow-primary-200 shadow-lg overflow-hidden">
-              <Image
+              <OptimizedImage
                 src={Logo.src}
                 className="rounded-full shadow-2xl"
                 alt="Logo"
-                loading="lazy"
                 width={40}
                 height={40}
               />
