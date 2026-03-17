@@ -3,7 +3,7 @@
 import { useSettings } from '@/contexts/SettingsContext'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
+import { OptimizedImage } from './ui/OptimizedImage'
 
 export default function Footer() {
   const { settings, isLoading: isSettingsLoading } = useSettings()
@@ -52,7 +52,7 @@ export default function Footer() {
                 </div>
                 <div className="text-sm md:text-lg xl:text-2xl flex items-center gap-2">
                   <span className="font-bold min-w-[120px]">អាស័យដ្ឋាន:</span>
-                  <span className="">{settings.address}</span>
+                  <span className="md:text-base">{settings.address}</span>
                 </div>
               </div>
 
@@ -79,15 +79,13 @@ export default function Footer() {
                             : 'pointer-events-none opacity-50',
                         )}
                       >
-                        <Image
+                        <OptimizedImage
                           src={
                             social.image ||
                             generatePlaceholderImage(`Social ${index + 1}`)
                           }
                           alt={social.url || `Social Icon ${index + 1}`}
-                          fill
                           className="size-full object-contain"
-                          referrerPolicy="no-referrer"
                         />
                       </a>
                     )

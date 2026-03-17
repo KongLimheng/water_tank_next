@@ -1,7 +1,7 @@
 // components/about/FeaturesSection.tsx
 
 import HtmlContent from '@/components/ui/HtmlContent'
-import { generatePlaceholderImage } from '@/lib/placeholderImage'
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { cn } from '@/lib/utils'
 import { AboutUsItem } from '@/types'
 import { motion } from 'motion/react'
@@ -25,16 +25,20 @@ export default function FeaturesSection({ data }: { data: AboutUsItem[] }) {
               key={index}
             >
               <div className="sm:w-[40%] w-1/2 md:w-1/3">
-                <div className="bg-white rounded-xl shadow-lg border-2 border-red-100 relative">
-                  <img
+                <div className="bg-white rounded-xl shadow-lg border-1 border-red-100 relative">
+                  <OptimizedImage
+                    src={item.image!}
+                    alt={`Product ${index}`}
+                    className="w-full h-auto rounded-lg object-cover aspect-square"
+                  />
+                  {/* <img
                     src={
                       item.image ??
                       generatePlaceholderImage(`Product ${index + 1}`)
                     }
                     alt={`Product ${index}`}
                     className="w-full h-auto rounded-lg object-cover aspect-square"
-                    referrerPolicy="no-referrer"
-                  />
+                  /> */}
                 </div>
               </div>
               <div className="md:w-2/3 text-center md:text-left">

@@ -9,7 +9,6 @@ iOS Safari (iPhone/iPad) renders Khmer text incorrectly, breaking ligatures and 
 iOS Safari applies font features (ligatures, kerning, contextual alternates) that conflict with Khmer Unicode rendering, causing characters to display incorrectly.
 
 ---
-
 ## Solution Implemented
 
 ### 1. **Font Stack (Best to Worst for iOS)**
@@ -22,7 +21,6 @@ font-family:
   'Khmer',             /* Generic */
   sans-serif;
 ```
-
 ### 2. **Critical CSS Properties**
 
 ```css

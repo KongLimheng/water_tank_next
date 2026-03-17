@@ -1,5 +1,6 @@
 // components/about/HeroSection.tsx
 import HtmlContent from '@/components/ui/HtmlContent'
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { Section1 } from '@/types'
 import { motion } from 'framer-motion'
 
@@ -14,10 +15,16 @@ export default function HeroSection({ data }: { data: Section1 }) {
         transition={{ duration: 0.3 }}
       >
         <div className="group relative w-full overflow-hidden rounded duration-500 transition-all">
-          <img
+          {/* <Image
             alt="Fa De Manufacture Banner"
             className="w-full h-full object-contain"
             src={data.image}
+          /> */}
+
+          <OptimizedImage
+            src={data.image}
+            alt="Fa De Manufacture Banner"
+            className="w-full h-full object-contain"
           />
         </div>
       </motion.div>
