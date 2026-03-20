@@ -36,8 +36,10 @@ export const metadata: Metadata = {
   description:
     'Fa De Manufacture Co., LTD. ផលិត និងផ្គត់ផ្គង់ បាសាំងទឹកអីណុក & ជ័រគ្រប់ប្រភេទ',
   icons: {
-    icon: '/logo.jpg',
+    icon: '/icon.svg',
+    apple: '/icon.svg',
   },
+  metadataBase: 'https://fademanufacture.com',
   openGraph: {
     images: ['/cover.jpg'],
     description:

@@ -83,7 +83,6 @@ export async function GET(req: NextRequest) {
         include: productInclude,
         skip: offset,
         take: limit,
-        orderBy: [{ volume: 'asc' }],
       }),
       prisma.product.count(),
     ])
@@ -101,6 +100,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: Request) {
+  if (req.method !== 'POST') {
+    return new Response('Method Not Allowed', { status: 405 })
+  }
   try {
     const formData = await req.formData()
     const name = formData.get('name') as string

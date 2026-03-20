@@ -52,7 +52,7 @@ export const getProductsByBrandCategory = async (
   category: string,
 ): Promise<ProductList[]> => {
   const { data } = await api.get<ProductList[]>(
-    `/product/category?id=${category}`,
+    `/products/category?id=${category}`,
   )
   return data
 }

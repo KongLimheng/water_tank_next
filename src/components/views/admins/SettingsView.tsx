@@ -11,13 +11,18 @@ import { useQuery } from '@tanstack/react-query'
 import {
   AlertCircle,
   CheckCircle2,
+  Copy,
+  Eye,
+  EyeOff,
   Globe,
   HelpCircle,
   Image as ImageIcon,
+  Key,
   Mail,
   MapPin,
   Phone,
   Plus,
+  RefreshCw,
   Save,
   Trash2,
   UploadCloud,
@@ -60,8 +65,37 @@ type SettingsTab = 'contact' | 'banners' | 'about'
 export const SettingsView = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsTab>('contact')
+  const [showPassword, setShowPassword] = useState(false)
   const { updateSettings, isSaving } = useSettingMutations()
   const [hasSubmitted, setHasSubmitted] = useState(false)
+
+  // Generate a random secure password
+  const generatePassword = useCallback(() => {
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
+    const length = 12
+    let password = ''
+    for (let i = 0; i < length; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return password
+  }, [])
+
+  const handleGeneratePassword = () => {
+    const newPassword = generatePassword()
+    methods.setValue('aboutUs.section1.dealerPassword', newPassword, {
+      shouldDirty: true,
+    })
+    toast.success('Password generated!')
+  }
+
+  const handleCopyPassword = () => {
+    const password = getValues('aboutUs.section1.dealerPassword')
+    if (password) {
+      navigator.clipboard.writeText(password)
+      toast.success('Password copied to clipboard!')
+    }
+  }
 
   // 1. Setup React Hook Form
   const methods = useForm<SettingsFormValues>({
@@ -74,6 +108,7 @@ export const SettingsView = () => {
       socials: [{ image: '', url: '' }],
       aboutUs: {
         section1: {
+          dealerPassword: '',
           image: '',
           content: '',
         },
@@ -309,6 +344,7 @@ export const SettingsView = () => {
           image: aboutUs.section1?.image,
           content: aboutUs.section1?.content,
           imageFile: aboutUs.section1?.imageFile,
+          dealerPassword: aboutUs.section1?.dealerPassword,
         },
         section2: await Promise.all(
           aboutUs.section2.map(async (item: AboutUsItem) => ({
@@ -535,6 +571,77 @@ export const SettingsView = () => {
                       rows={2}
                       className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none resize-none"
                     />
+                  </div>
+                </div>
+
+                {/* Dealer Password Section */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                      Dealer Login Password
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Key
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                          size={16}
+                        />
+                        <input
+                          {...register('aboutUs.section1.dealerPassword')}
+                          type={showPassword ? 'text' : 'password'}
+                          className="w-full pl-9 pr-12 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-mono"
+                          placeholder="Enter new password or generate one"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          title={
+                            showPassword ? 'Hide password' : 'Show password'
+                          }
+                        >
+                          {showPassword ? (
+                            <Eye size={18} />
+                          ) : (
+                            <EyeOff size={18} />
+                          )}
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleGeneratePassword}
+                        className="px-4 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition flex items-center gap-2 whitespace-nowrap"
+                        title="Generate random password"
+                      >
+                        <RefreshCw size={18} />
+                        <span className="hidden sm:inline">Generate</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCopyPassword}
+                        className="px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition flex items-center gap-2 whitespace-nowrap border border-slate-200"
+                        title="Copy password to clipboard"
+                      >
+                        <Copy size={18} />
+                        <span className="hidden sm:inline">Copy</span>
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-1 mt-2">
+                      <p className="text-xs text-slate-500">
+                        Enter a password manually or click{' '}
+                        <span className="font-bold text-primary-600">
+                          Generate
+                        </span>{' '}
+                        to create a secure random password.
+                      </p>
+                      <p className="text-xs text-amber-600 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        <span>
+                          For security, the password is encrypted and won&apos;t
+                          be shown. Leave empty to keep current password.
+                        </span>
+                      </p>
+                    </div>
                   </div>
                 </div>
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { getCategoryById } from '@/services/categoryService'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
@@ -8,7 +9,6 @@ import ProductDetailsModal from '../components/Product/ProductDetailsModal'
 import { PriceListView } from '../components/views/PriceListView'
 import { getProductsByBrandCategory } from '../services/productService'
 import { ProductList } from '../types'
-import { getCategoryById } from '@/services/categoryService'
 
 const ShopProducts = () => {
   const searchParams = useSearchParams()
@@ -27,8 +27,8 @@ const ShopProducts = () => {
   })
 
   const { data: catById, isLoading: isCateLoading } = useQuery({
-    queryKey: ["category", activeCategory],
-    queryFn: ()=> getCategoryById(parseInt(activeCategory))
+    queryKey: ['category', activeCategory],
+    queryFn: () => getCategoryById(parseInt(activeCategory)),
   })
 
   const visibleProducts = fetchedProducts || []
@@ -57,7 +57,6 @@ const ShopProducts = () => {
         ) : catById ? (
           <PriceListView
             products={visibleProducts}
-            category={catById}
             onProductClick={setSelectedProduct}
           />
         ) : null}
