@@ -24,7 +24,8 @@ export default function HeroSection({ data }: { data: Section1 }) {
           <OptimizedImage
             src={data.image}
             alt="Fa De Manufacture Banner"
-            className="w-full h-full object-contain"
+            className="size-full object-contain"
+            width={1920}
           />
         </div>
       </motion.div>
@@ -37,10 +38,7 @@ export default function HeroSection({ data }: { data: Section1 }) {
         transition={{ duration: 0.5 }}
         className="container mx-auto p-4 max-w-4xl text-center"
       >
-        <HtmlContent
-          html={data.content}
-          className="text-lg md:text-xl text-gray-800 space-y-4"
-        />
+        <HtmlContent html={data.content} className="text-gray-800" />
       </motion.div>
     </section>
   )

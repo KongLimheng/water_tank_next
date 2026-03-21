@@ -8,7 +8,10 @@ export default function HtmlContent({
   html: string
   className?: string
 }) {
-  const cleanHtml = DOMPurify.sanitize(sanitizeKhmerText(html))
+  const cleanHtml = DOMPurify.sanitize(sanitizeKhmerText(html), {
+    ALLOWED_TAGS: ['p', 'br', 'h1', 'h2', 'h3', 'span', 'ul', 'ol', 'li'],
+    ALLOWED_ATTR: ['style', 'class'],
+  }).replace(/<p([^>]*)><\/p>/g, '<p$1><br></p>')
 
   return (
     <div
@@ -26,7 +29,6 @@ export default function HtmlContent({
         WebkitTextSizeAdjust: '100%',
         textSizeAdjust: '100%',
         // Ensure proper Khmer text direction
-        unicodeBidi: 'plaintext',
       }}
     />
   )

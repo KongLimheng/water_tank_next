@@ -108,9 +108,34 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     },
   })
 
+  // Custom HardBreak - Enter creates new paragraph after heading, or <br> in paragraph
+  // const CustomHardBreak = HardBreak.extend({
+  //   name: 'customHardBreak',
+  //   addKeyboardShortcuts() {
+  //     return {
+  //       Enter: () => {
+  //         // In paragraph: add <br> with reset styles
+  //         this.editor.commands.unsetColor()
+  //         this.editor.commands.unsetAllMarks()
+  //         this.editor.commands.splitBlock()
+  //         return this.editor.commands.setHardBreak()
+  //       },
+  //     }
+  //   },
+  // })
+
+  //  'Shift-Enter': () => this.editor.commands.setHardBreak(),
+  //     Enter: () => {
+  //       // Reset color to default before creating new paragraph
+  //       this.editor.commands.unsetColor()
+  //       this.editor.commands.unsetAllMarks()
+  //       return this.editor.commands.splitBlock()
+  //     },
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({}),
+      // CustomHardBreak,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -122,7 +147,6 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
       const cleanHTML = sanitizeKhmerText(editor.getHTML())
-
       onChange(cleanHTML)
     },
     onFocus: () => setIsFocused(true),

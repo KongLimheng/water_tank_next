@@ -84,6 +84,7 @@ export interface SiteSettings {
   phone: string
   email: string
   address: string
+  dealerPassword: string
   mapUrl: string
   banners: BannerItem[]
   aboutUs: AboutUsData
@@ -127,6 +128,7 @@ export interface AboutUsData {
 }
 
 export interface Section1 {
+  dealerPassword: string
   image: string
   content: string
   imageFile?: File

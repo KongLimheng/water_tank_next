@@ -1,7 +1,6 @@
 import { ProductModal } from '@/components/Product/ProductModel'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { useProductMutations } from '@/hooks/useProductMutations'
-import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { getCategories } from '@/services/categoryService'
 import { getProducts, searchProducts } from '@/services/productService'
 import { ProductList } from '@/types'
@@ -141,10 +140,7 @@ export const ProductView = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <OptimizedImage
-                            src={
-                              product.image[0] ||
-                              generatePlaceholderImage(product.name)
-                            }
+                            src={product.image[0]}
                             alt={product.name}
                             width={48}
                             height={48}

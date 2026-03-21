@@ -45,7 +45,7 @@ export async function saveFile(file: File, folder: string): Promise<string> {
       cleanNameWithoutExt = 'file'
     }
 
-    const filename = `${cleanNameWithoutExt}-${uniqueSuffix}${ext}`
+    const filename = `${cleanNameWithoutExt}-${uniqueSuffix}.jpg`
     const filepath = path.join(uploadDir, filename)
 
     let metadata: sharp.Metadata
@@ -58,7 +58,7 @@ export async function saveFile(file: File, folder: string): Promise<string> {
       console.error('Image validation failed:', err)
       throw new Error('Uploaded file is not a valid image')
     }
-    console.log(`Start size: ${file.size}`)
+    console.log(`Start size: ${Math.round(file.size / 1024)}KB`)
 
     let sharpPipeline = sharp(buffer).rotate().toColorspace('srgb') // Auto-rotate based on EXIF
 
@@ -140,5 +140,5 @@ const sanitizeFilename = (filename: string): string => {
     .substring(0, 100)
 
   if (!sanitized.trim()) sanitized = 'image'
-  return sanitized + ext
+  return sanitized
 }

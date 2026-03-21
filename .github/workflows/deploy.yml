@@ -131,7 +131,7 @@ jobs:
 
             # Restart PM2 application
             echo "Restarting PM2..."
-            pm2 reload water_tank-app
+            pm2 reload water_tank-app --update-env
 
             # Save PM2 process list
             pm2 save

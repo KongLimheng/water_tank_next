@@ -1,9 +1,26 @@
 import { cleanImage } from '@/lib/cleanImage'
 import { saveFile } from '@/lib/fileUpload'
-import { prisma } from '@/lib/prismaClient' // Now should verify
+import { prisma } from '@/lib/prismaClient'
 import { SocialItem } from '@/types'
 import { Prisma } from '@prisma/client'
 import { NextResponse } from 'next/server'
+
+/**
+ * Remove dealerPassword from the aboutUs data before sending to client
+ */
+function sanitizeAboutUs(aboutUs: any): any {
+  if (!aboutUs) return aboutUs
+
+  const sanitized = { ...aboutUs }
+
+  // Remove dealerPassword from section1
+  if (sanitized.section1) {
+    const { dealerPassword, ...section1WithoutPassword } = sanitized.section1
+    sanitized.section1 = section1WithoutPassword
+  }
+
+  return sanitized
+}
 
 export async function GET() {
   try {
@@ -18,7 +35,18 @@ export async function GET() {
         address: '',
         mapUrl: '',
         banners: [],
-        aboutUs: [],
+        aboutUs: {
+          section1: {
+            dealerPassword: '',
+            image: '',
+            content: '',
+          },
+          section2: [],
+          section3: {
+            description: '',
+            items: [],
+          },
+        },
         socials: [],
       })
     }
@@ -132,6 +160,17 @@ export async function PUT(req: Request) {
             processedSection.section1.image = await saveFile(file, 'about-us')
           }
         }
+        // Encrypt dealerPassword if it exists and is not already hashed
+        // if (newAboutUsData.section1.dealerPassword) {
+        //   // Check if password is already hashed (bcrypt hashes start with $2)
+        //   const isAlreadyHashed =
+        //     newAboutUsData.section1.dealerPassword.startsWith('$2')
+        //   if (!isAlreadyHashed) {
+        //     processedSection.section1.dealerPassword = await hashPassword(
+        //       newAboutUsData.section1.dealerPassword,
+        //     )
+        //   }
+        // }
       }
 
       // Process section 2 items (array of content items)

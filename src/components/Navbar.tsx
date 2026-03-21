@@ -1,16 +1,52 @@
 'use client'
 
-import { MenuIcon } from 'lucide-react'
+import { useDealer } from '@/contexts/DealerContext'
+import { Check, ChevronDown, Lock, MenuIcon, UserCheck } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Logo from '../../public/logo.jpg' // Check path
 import SearchBox from './SearchBox'
 
 const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [dealerDropdownOpen, setDealerDropdownOpen] = useState(false)
+  const [dealerPassword, setDealerPassword] = useState('')
   const pathname = usePathname()
+  const { isAuthenticated, isLoading, verifyPassword, logout } = useDealer()
+  const dealerDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Show dealer dropdown only on /products or /shop routes
+  const showDealerDropdown =
+    pathname === '/products' || pathname?.startsWith('/shop')
+
+  // Close dealer dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dealerDropdownOpen &&
+        dealerDropdownRef.current &&
+        !dealerDropdownRef.current.contains(event.target as Node)
+      ) {
+        setDealerDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dealerDropdownOpen])
+
+  const handleDealerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (dealerPassword.trim()) {
+      const success = await verifyPassword(dealerPassword)
+      if (success) {
+        setDealerPassword('')
+        setDealerDropdownOpen(false)
+      }
+    }
+  }
 
   const navLinks = [
     { href: '/', label: 'Home', exact: true },
@@ -66,7 +102,7 @@ const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-0 lg:gap-6">
+          <div className="hidden md:flex items-center gap-0 lg:gap-4">
             {/* Home Link */}
             {navLinks.map((link) => (
               <Link
@@ -86,6 +122,98 @@ const Navbar: React.FC = () => {
             <div className="hidden md:block w-48 lg:w-56">
               <SearchBox />
             </div>
+
+            {/* Dealer Dropdown - Desktop */}
+            {showDealerDropdown && (
+              <div className="relative" ref={dealerDropdownRef}>
+                <button
+                  onClick={() => setDealerDropdownOpen(!dealerDropdownOpen)}
+                  className={`flex items-center ml-1 gap-1.5 px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-all ${
+                    isAuthenticated
+                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  }`}
+                >
+                  {isAuthenticated ? (
+                    <>
+                      <UserCheck size={12} />
+                      <span>Dealer</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={12} />
+                      <span>Dealer</span>
+                    </>
+                  )}
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform ${
+                      dealerDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {dealerDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {isAuthenticated ? (
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 text-green-600 mb-3">
+                          <Check className="size-5" />
+                          <span className="font-bold text-sm">
+                            Dealer Authenticated
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">
+                          You can now view dealer prices
+                        </p>
+                        {/* <button
+                          onClick={() => {
+                            logout()
+                            setDealerDropdownOpen(false)
+                          }}
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                        >
+                          <LogOut size={14} />
+                          Logout
+                        </button> */}
+                      </div>
+                    ) : (
+                      <form onSubmit={handleDealerSubmit} className="p-4">
+                        <label className="block text-xs font-bold text-slate-700 mb-2">
+                          Enter Dealer Password
+                        </label>
+                        <div className="relative mb-3">
+                          <Lock
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                            size={12}
+                          />
+                          <input
+                            type="password"
+                            value={dealerPassword}
+                            onChange={(e) => setDealerPassword(e.target.value)}
+                            placeholder="Password"
+                            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={isLoading || !dealerPassword.trim()}
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                        >
+                          {isLoading ? (
+                            <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                          ) : (
+                            <Check size={12} />
+                          )}
+                          OK
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <button
@@ -140,6 +268,81 @@ const Navbar: React.FC = () => {
             >
               About Us
             </Link>
+
+            {/* Mobile Dealer Section */}
+            {showDealerDropdown && (
+              <div className="border-t border-slate-100 my-2 pt-2">
+                {isAuthenticated ? (
+                  <div className="flex items-center justify-between px-3 py-2 bg-green-50 rounded-lg mb-2">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <UserCheck size={18} />
+                      <span className="text-sm font-bold">Dealer</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout()
+                        setDealerDropdownOpen(false)
+                      }}
+                      className="text-xs text-red-600 font-medium hover:text-red-700"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setDealerDropdownOpen(!dealerDropdownOpen)}
+                      className="w-full flex items-center justify-between px-3 py-2 bg-amber-50 text-amber-700 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Lock size={18} />
+                        <span className="text-sm font-bold">Dealer Login</span>
+                      </div>
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform ${
+                          dealerDropdownOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {dealerDropdownOpen && (
+                      <form
+                        onSubmit={handleDealerSubmit}
+                        className="px-3 pb-3 space-y-2"
+                      >
+                        <div className="relative">
+                          <Lock
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                            size={14}
+                          />
+                          <input
+                            type="password"
+                            value={dealerPassword}
+                            onChange={(e) => setDealerPassword(e.target.value)}
+                            placeholder="Enter password"
+                            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={isLoading || !dealerPassword.trim()}
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                        >
+                          {isLoading ? (
+                            <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                          ) : (
+                            <Check size={14} />
+                          )}
+                          OK
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="border-t border-slate-100 my-2"></div>
             <Link

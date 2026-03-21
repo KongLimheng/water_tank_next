@@ -122,7 +122,7 @@ const SearchBox: React.FC<{
           onClick={handleInputClick}
           onTouchEnd={handleInputTouchEnd}
           placeholder="Search products..."
-          className="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl text-xs lg:text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+          className="w-full pl-10 pr-10 py-1.5 border border-slate-200 rounded-lg text-xs lg:text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
         />
       </div>
 
