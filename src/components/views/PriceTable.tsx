@@ -81,7 +81,7 @@ export const PriceTable = ({
         </div>
 
         {maxVariants > 1 ? (
-          ['តម្លៃ', 'តម្លៃ'].map((v, idx) => (
+          ['តម្លៃ (ខៀវ)', 'តម្លៃ (ម៉ាប)'].map((v, idx) => (
             <div
               key={`header-price-${idx}`}
               className={`py-2 px-1 ${
