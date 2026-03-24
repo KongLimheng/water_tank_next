@@ -4,6 +4,7 @@ import { useSettings } from '@/contexts/SettingsContext'
 import { useRouter } from 'next/navigation'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import type { BannerItem } from '../types'
+import { OptimizedImage } from './ui/OptimizedImage'
 
 export const Hero: React.FC = () => {
   const { settings, isLoading: isSettingsLoading } = useSettings()
@@ -80,10 +81,12 @@ const BannerContent = ({
         isClickable && router.push(`/shop?category=${banner.categoryId}`)
       }
     >
-      <img
+      <OptimizedImage
         src={banner.banner_image}
         alt={banner.name}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        width={1080}
+        priority={isMainHero}
       />
 
       <div
@@ -96,13 +99,6 @@ const BannerContent = ({
         }
       `}
       />
-
-      <div
-        className={`
-        absolute bottom-0 left-0 w-full
-        ${isMainHero ? 'p-8' : 'p-6'}
-      `}
-      ></div>
     </div>
   )
 }

@@ -1,14 +1,14 @@
 'use client'
 
+import ProductDetailsModal from '@/components/Product/ProductDetailsModal'
+import { PriceListView } from '@/components/views/PriceListView'
 import { getCategoryById } from '@/services/categoryService'
+import { getProductsByBrandCategory } from '@/services/productService'
+import { ProductList } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import ProductDetailsModal from '../components/Product/ProductDetailsModal'
-import { PriceListView } from '../components/views/PriceListView'
-import { getProductsByBrandCategory } from '../services/productService'
-import { ProductList } from '../types'
 
 const ShopProducts = () => {
   const searchParams = useSearchParams()

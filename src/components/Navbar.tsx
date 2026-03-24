@@ -16,6 +16,7 @@ const Navbar: React.FC = () => {
   const pathname = usePathname()
   const { isAuthenticated, isLoading, verifyPassword, logout } = useDealer()
   const dealerDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileDealerRef = useRef<HTMLDivElement>(null)
 
   // Show dealer dropdown only on /products or /shop routes
   const showDealerDropdown =
@@ -24,17 +25,25 @@ const Navbar: React.FC = () => {
   // Close dealer dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dealerDropdownOpen &&
-        dealerDropdownRef.current &&
-        !dealerDropdownRef.current.contains(event.target as Node)
-      ) {
+      if (!dealerDropdownOpen) return
+
+      const isOutsideDesktop = dealerDropdownRef.current
+        ? !dealerDropdownRef.current.contains(event.target as Node)
+        : true
+      const isOutsideMobile = mobileDealerRef.current
+        ? !mobileDealerRef.current.contains(event.target as Node)
+        : true
+
+      // Close if click is outside the currently visible dropdown
+      if (isOutsideDesktop && isOutsideMobile) {
         setDealerDropdownOpen(false)
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [dealerDropdownOpen])
 
   const handleDealerSubmit = async (e: React.FormEvent) => {
@@ -81,12 +90,12 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 cursor-pointer">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center  justify-center shadow-primary-200 shadow-lg overflow-hidden">
+            <div className="size-8 lg:size-10 rounded-full flex items-center  justify-center shadow-primary-200 shadow-lg overflow-hidden">
               <Image
                 src={Logo.src}
-                className="rounded-full shadow-2xl"
+                className="rounded-full size-full"
                 alt="Logo"
-                loading="lazy"
+                loading="eager"
                 width={40}
                 height={40}
               />
@@ -271,7 +280,10 @@ const Navbar: React.FC = () => {
 
             {/* Mobile Dealer Section */}
             {showDealerDropdown && (
-              <div className="border-t border-slate-100 my-2 pt-2">
+              <div
+                className="border-t border-slate-100 my-2 pt-2"
+                ref={mobileDealerRef}
+              >
                 {isAuthenticated ? (
                   <div className="flex items-center justify-between px-3 py-2 bg-green-50 rounded-lg mb-2">
                     <div className="flex items-center gap-2 text-green-700">

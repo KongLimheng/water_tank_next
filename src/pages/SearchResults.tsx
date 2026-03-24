@@ -134,9 +134,7 @@ const SearchResults = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm md:text-lg font-bold text-primary-600">
-                        {product.price
-                          ? `$${product.price.toFixed(2)}`
-                          : 'សាកសួរ'}
+                        សាកសួរ
                       </span>
                     </div>
                   </div>
@@ -183,6 +181,7 @@ const SearchResults = () => {
       <ProductDetailsModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
+        isSearchPage={true}
       />
     </>
   )

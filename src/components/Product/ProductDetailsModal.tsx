@@ -1,4 +1,5 @@
 'use client'
+import { useDealer } from '@/contexts/DealerContext'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { X } from 'lucide-react'
 import { ProductList } from '../../types'
@@ -7,17 +8,27 @@ import ProductImageGallery from './ProductImageGallery'
 interface ProductDetailsModalProps {
   product: ProductList | null
   onClose: () => void
+  isSearchPage?: boolean
 }
 
 const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   product,
   onClose,
+  isSearchPage = false,
 }) => {
+  const { isAuthenticated } = useDealer()
+
   if (!product) return null
 
   // Determine display values
-  const displayPrice = product.price
   const displayImage = product.image
+
+  // Show 'សាកសួរ' if on search page or user is not authenticated
+  const showInquiryPrice = isSearchPage || !isAuthenticated
+
+  const displayPrice = showInquiryPrice
+    ? 'សាកសួរ'
+    : `$${product.price.toFixed(2)}`
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6">
@@ -64,7 +75,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
               <div className="">
                 <p className="sm:text-xl md:text-2xl font-bold text-primary-600 mb-2">
-                  {product.price ? `$${product.price.toFixed(2)}` : 'សាកសួរ'}
+                  {displayPrice}
                 </p>
                 <p className="text-slate-600 leading-relaxed">
                   {product.description}
