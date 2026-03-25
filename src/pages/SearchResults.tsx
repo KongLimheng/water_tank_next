@@ -1,6 +1,7 @@
 'use client'
 
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
+import { useDealer } from '@/contexts/DealerContext'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Loader2, Search } from 'lucide-react'
@@ -16,6 +17,7 @@ const SearchResults = () => {
   const searchParams = useSearchParams()
   const query = searchParams?.get('q') || ''
   const router = useRouter()
+  const { isAuthenticated } = useDealer()
 
   const [selectedProduct, setSelectedProduct] = useState<ProductList | null>(
     null,
@@ -134,7 +136,9 @@ const SearchResults = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm md:text-lg font-bold text-primary-600">
-                        សាកសួរ
+                        {isAuthenticated
+                          ? `$${product.price.toFixed(2)}`
+                          : 'សាកសួរ'}
                       </span>
                     </div>
                   </div>
@@ -181,7 +185,6 @@ const SearchResults = () => {
       <ProductDetailsModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
-        isSearchPage={true}
       />
     </>
   )
