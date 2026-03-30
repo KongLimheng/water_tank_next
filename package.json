@@ -12,6 +12,7 @@
     "db:seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@jsquash/jpeg": "^1.6.0",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "@tanstack/react-query": "^5.90.16",
@@ -25,6 +26,8 @@
     "bcryptjs": "^3.0.3",
     "dompurify": "^3.3.1",
     "dotenv": "^17.2.3",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.556.0",
     "motion": "^12.35.0",
     "next": "latest",
