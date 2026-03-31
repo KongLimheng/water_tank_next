@@ -1,6 +1,6 @@
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { ProductList } from '@/types'
-import html2canvas from 'html2canvas'
+import { toCanvas } from 'html-to-image'
 import {
   ChevronDown,
   Download,
@@ -26,75 +26,150 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
   const [downloadType, setDownloadType] = useState<'pdf' | 'jpg' | null>(null)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-  const captureContent = async () => {
+  const captureContent = async (opts?: { width?: number; scale?: number }) => {
     if (!contentRef.current) return null
 
-    // Save original styles
-    const originalStyle = {
-      width: contentRef.current.style.width,
-      minWidth: contentRef.current.style.minWidth,
-      maxWidth: contentRef.current.style.maxWidth,
-      position: contentRef.current.style.position,
-    }
+    const width = opts?.width ?? 1920
+    const scale = opts?.scale ?? 2
 
-    // Force desktop layout for capture
-    contentRef.current.style.width = '1920px'
-    contentRef.current.style.minWidth = '1200px'
-    contentRef.current.style.maxWidth = 'none'
-    contentRef.current.style.position = 'absolute'
-    contentRef.current.style.left = '0'
-    contentRef.current.style.top = '0'
-    contentRef.current.style.zIndex = '-9999'
+    const original = contentRef.current
+
+    // ✅ Clone node
+    const clone = original.cloneNode(true) as HTMLElement
+
+    // ✅ Create offscreen container
+    const container = document.createElement('div')
+    container.style.position = 'fixed'
+    container.style.top = '-99999px'
+    container.style.left = '0'
+    container.style.width = `${width}px`
+    container.style.background = '#ffffff'
+    container.style.zIndex = '-1'
+
+    // ✅ Force layout size
+    clone.style.width = `${width}px`
+    clone.style.minWidth = `${width}px`
+    clone.style.maxWidth = `${width}px`
+
+    clone.style.height = clone.clientHeight ? `${clone.clientHeight}px` : 'auto'
+
+    container.appendChild(clone)
+    document.body.appendChild(container)
 
     try {
-      const canvas = await html2canvas(contentRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: true,
+      // ✅ Wait for fonts
+      await document.fonts.ready
+
+      // ✅ Wait for images inside clone
+      const images = Array.from(clone.querySelectorAll('img'))
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete) return Promise.resolve()
+          return new Promise((res) => {
+            img.onload = res
+            img.onerror = res
+          })
+        }),
+      )
+      // ✅ Wait for layout paint
+      await new Promise((r) => setTimeout(r, 100))
+
+      // ✅ Capture
+      const canvas = await toCanvas(clone, {
+        width,
+        height: 1750,
+        pixelRatio: scale,
         backgroundColor: '#ffffff',
-        windowWidth: 1920,
-        scrollX: 0,
-        scrollY: 0,
-        ignoreElements: (el) => {
-          // Exclude the download button and dropdown from the capture
-          if (el.closest('.not-print')) return true
-          return false
+        cacheBust: true,
+
+        filter: (node: HTMLElement) => {
+          if (node.classList?.contains('not-print')) return false
+          if (node.classList?.contains('lg:flex-row')) {
+            node.style.flexDirection = 'row'
+            return true
+          }
+
+          if (node.classList?.contains('lg:hidden')) {
+            return false
+          }
+
+          if (node.classList?.contains('lg:flex')) {
+            node.style.justifyContent = 'center'
+            node.style.display = 'flex'
+            return true
+          }
+          return true
         },
       })
 
+      console.log(canvas)
+
       return canvas
+    } catch (err) {
+      console.error('capture failed', err)
+      return null
     } finally {
-      // Restore original styles
-      contentRef.current.style.width = originalStyle.width
-      contentRef.current.style.minWidth = originalStyle.minWidth
-      contentRef.current.style.maxWidth = originalStyle.maxWidth
-      contentRef.current.style.position = originalStyle.position
-      contentRef.current.style.left = ''
-      contentRef.current.style.top = ''
-      contentRef.current.style.zIndex = ''
+      // ✅ Cleanup
+      document.body.removeChild(container)
     }
   }
 
   const downloadAsPDF = async () => {
     setDownloadType('pdf')
     try {
-      const canvas = await captureContent()
-      if (!canvas) return
-
-      const jsPDF = (await import('jspdf')).default
-      const imgData = canvas.toDataURL('image/png')
-
-      const pdf = new jsPDF({
-        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: 'a4',
+      const canvas = await captureContent({
+        width: 1920,
+        scale: 2,
       })
+      if (!canvas) return
+      const jsPDF = (await import('jspdf')).default
 
-      const imgWidth = 210
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      const orientation =
+        canvas.width > canvas.height ? 'landscape' : 'portrait'
+      const pdf = new jsPDF({ orientation, unit: 'mm', format: 'a4' })
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+
+      // px per mm for this rendered canvas when scaled to pdf width
+      const pxPerMm = canvas.width / pdfWidth
+      const pageHeightPx = Math.floor(pdfHeight * pxPerMm)
+
+      let remainingHeight = canvas.height
+      let position = 0
+
+      while (remainingHeight > 0) {
+        const pageCanvas = document.createElement('canvas')
+        pageCanvas.width = canvas.width
+        pageCanvas.height = Math.min(remainingHeight, pageHeightPx)
+
+        const ctx = pageCanvas.getContext('2d')
+        if (ctx) {
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height)
+          ctx.drawImage(
+            canvas,
+            0,
+            position,
+            canvas.width,
+            pageCanvas.height,
+            0,
+            0,
+            pageCanvas.width,
+            pageCanvas.height,
+          )
+        }
+
+        const pageData = pageCanvas.toDataURL('image/png')
+        const pageImgHeightMm = (pageCanvas.height * pdfWidth) / canvas.width
+
+        pdf.addImage(pageData, 'PNG', 0, 0, pdfWidth, pageImgHeightMm)
+
+        remainingHeight -= pageCanvas.height
+        position += pageCanvas.height
+        if (remainingHeight > 0) pdf.addPage()
+      }
+
       pdf.save(`pricelist-${new Date().toISOString().split('T')[0]}.pdf`)
     } catch (error) {
       console.error('Error downloading PDF:', error)
@@ -106,7 +181,10 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
   const downloadAsJPG = async () => {
     setDownloadType('jpg')
     try {
-      const canvas = await captureContent()
+      const canvas = await captureContent({
+        width: 1920,
+        scale: 3,
+      })
       if (!canvas) return
 
       const link = document.createElement('a')
@@ -205,7 +283,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
         </div>
 
         {/* Desktop Layout: [Vertical Table] - [Center Letter] - [Horizontal Table] */}
-        <div className="flex flex-col lg:flex-row items-stretch gap-4">
+        <div className="flex flex-col lg:flex-row items-stretch">
           {/* Left: Vertical Table */}
           <div className="flex-1 w-full">
             <PriceTable
