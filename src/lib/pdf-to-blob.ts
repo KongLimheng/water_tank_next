@@ -67,6 +67,7 @@ export async function pdfBlobToImage(
     await page.render({
       canvasContext: context,
       viewport: viewport,
+      canvas,
     }).promise
 
     return canvas.toDataURL(format, quality)
@@ -87,7 +88,7 @@ export async function pdfBlobToImages(
   ensureWorkerConfigured()
 
   const arrayBuffer = await pdfBlob.arrayBuffer()
-  const pdf = await pdfjsLib.getDocument({ arrayBuffer }).promise
+  const pdf = await pdfjsLib.getDocument(arrayBuffer).promise
   const images: string[] = []
 
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
@@ -110,6 +111,7 @@ export async function pdfBlobToImages(
     await page.render({
       canvasContext: context,
       viewport: viewport,
+      canvas,
     }).promise
 
     images.push(canvas.toDataURL(format, quality))
