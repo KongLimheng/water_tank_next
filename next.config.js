@@ -41,6 +41,11 @@ const nextConfig = {
             value:
               'camera=(), microphone=(), geolocation=(), interest-cohort=()',
           },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self' http: https: data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;",
+          },
         ],
       },
 
