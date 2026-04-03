@@ -1,5 +1,52 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Webpack configuration for WASM modules
+  webpack: (config, { isServer, webpack }) => {
+    // Handle qpdf-wasm and other modules that use Node.js built-ins
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        crypto: false,
+        module: false,
+        url: false,
+        worker_threads: false,
+        canvas: false, // Required for pdfjs-dist-legacy
+      }
+    } else {
+      // Mark canvas as external for server-side builds
+      config.externals = config.externals || []
+      config.externals.push({
+        canvas: 'commonjs canvas',
+      })
+    }
+
+    // Also add module and canvas to alias for some packages that use it
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      module: false,
+    }
+
+    // Ignore problematic modules that are not needed in browser
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^module$/,
+      }),
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^canvas$/,
+        contextRegExp: /pdfjs-dist-legacy/,
+      }),
+    )
+
+    // Enable WebAssembly
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+    }
+
+    return config
+  },
   transpilePackages: ['@react-pdf/renderer', 'pdfjs-dist'],
   // Allow loading images from existing uploads folder (if served securely) or external sources
   compiler: {
@@ -13,42 +60,24 @@ const nextConfig = {
         source: '/:path*',
         headers: [
           {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
           },
           {
             key: 'X-Frame-Options',
             value: 'SAMEORIGIN',
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
           },
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          {
-            key: 'Permissions-Policy',
-            value:
-              'camera=(), microphone=(), geolocation=(), interest-cohort=()',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value:
-              "default-src 'self' http: https: data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;",
-          },
         ],
       },
-
+      // fonts
       {
         source: '/fonts/:all*',
         headers: [
@@ -62,11 +91,38 @@ const nextConfig = {
           },
         ],
       },
+
+      // Static assets - long cache
+      {
+        source:
+          '/:path*.(ico|jpg|jpeg|png|gif|svg|webp|avif|woff|woff2|ttf|eot)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // JavaScript and CSS - cache with revalidation
+      {
+        source: '/:path*.(js|css)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ]
   },
   images: {
     qualities: [85],
-    minimumCacheTTL: 60,
+    // Define device sizes for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    // Define image sizes for srcset
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Minimum cache TTL for optimized images (in seconds)
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     remotePatterns: [
       {
         protocol: 'https',

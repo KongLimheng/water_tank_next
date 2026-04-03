@@ -33,7 +33,9 @@ export async function pdfBlobToImage(
   const blobUrl = URL.createObjectURL(pdfBlob)
 
   try {
-    const pdf = await pdfjsLib.getDocument(blobUrl).promise
+    const pdf = await pdfjsLib.getDocument({
+      data: await pdfBlob.arrayBuffer(),
+    }).promise
 
     if (pageNumber < 1 || pageNumber > pdf.numPages) {
       throw new Error(`Invalid page: ${pageNumber}`)
