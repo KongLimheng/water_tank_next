@@ -125,7 +125,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
     return groups
   }, [products])
 
-  const [instance, updateInstance] = usePDF({
+  const [instance] = usePDF({
     document: PriceListPDF({
       products: products,
       groupedData: groupedData,
@@ -204,89 +204,91 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
   return (
     <div className="max-w-full rounded-lg mx-auto p-2 md:p-8 bg-slate-200/30 min-h-screen font-sans">
       {/* Download Button with Dropdown */}
-      <div className="flex justify-end gap-2 mb-4 relative">
-        <div className="relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            disabled={downloadType !== null}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Download Price List"
-          >
-            {downloadType !== null ? (
-              <Loader2 className="animate-spin" size={18} />
-            ) : (
-              <Download size={18} />
-            )}
-            <span>Download</span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
-
-          {/* Dropdown Menu */}
-          {isDropdownOpen && (
-            <>
-              {/* Backdrop to close dropdown */}
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setIsDropdownOpen(false)}
+      {isAuthenticated && (
+        <div className="flex justify-end gap-2 mb-4 relative">
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              disabled={downloadType !== null}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download Price List"
+            >
+              {downloadType !== null ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <Download size={18} />
+              )}
+              <span>Download</span>
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
               />
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-20 overflow-hidden">
-                {instance.loading ? (
-                  <div className="w-full flex items-center gap-3 px-4 py-3 text-left">
-                    <Loader2 className="animate-spin" size={18} />
-                    <div>
-                      <div className="text-xs font-medium text-slate-900">
-                        Generating...
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        const a = document.createElement('a')
-                        a.href = instance.url!
-                        a.download = 'pricelist.pdf'
-                        a.click()
-                        setIsDropdownOpen(false)
-                        setDownloadType(null)
-                      }}
-                      disabled={downloadType !== null}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FileText className="text-red-600" size={18} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <>
+                {/* Backdrop to close dropdown */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-20 overflow-hidden">
+                  {instance.loading ? (
+                    <div className="w-full flex items-center gap-3 px-4 py-3 text-left">
+                      <Loader2 className="animate-spin" size={18} />
                       <div>
                         <div className="text-xs font-medium text-slate-900">
-                          PDF Format
+                          Generating...
                         </div>
                       </div>
-                    </button>
-                    <div className="border-t border-slate-200" />
-                    <button
-                      onClick={() => {
-                        setIsDropdownOpen(false)
-                        // downloadAsJPG()
-                        handleDownloadJPG(instance.blob!)
-                      }}
-                      disabled={downloadType !== null}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FileImage className="text-blue-600" size={18} />
-                      <div>
-                        <div className="text-xs  font-medium text-slate-900">
-                          JPG Format
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          const a = document.createElement('a')
+                          a.href = instance.url!
+                          a.download = 'pricelist.pdf'
+                          a.click()
+                          setIsDropdownOpen(false)
+                          setDownloadType(null)
+                        }}
+                        disabled={downloadType !== null}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <FileText className="text-red-600" size={18} />
+                        <div>
+                          <div className="text-xs font-medium text-slate-900">
+                            PDF Format
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  </>
-                )}
-              </div>
-            </>
-          )}
+                      </button>
+                      <div className="border-t border-slate-200" />
+                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false)
+                          // downloadAsJPG()
+                          handleDownloadJPG(instance.blob!)
+                        }}
+                        disabled={downloadType !== null}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <FileImage className="text-blue-600" size={18} />
+                        <div>
+                          <div className="text-xs  font-medium text-slate-900">
+                            JPG Format
+                          </div>
+                        </div>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Page Header */}
       <div className="flex justify-center pb-8 relative">
@@ -298,7 +300,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
           alt="Product"
           className="w-full object-contain rounded"
           width={1920}
-          // loading="eager"
+          priority
         />
       </div>
 
