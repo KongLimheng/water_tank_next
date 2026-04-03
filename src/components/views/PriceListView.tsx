@@ -1,4 +1,7 @@
+'use client'
+
 import { useDealer } from '@/contexts/DealerContext'
+import { downloadPDFAsImage } from '@/lib/pdf-to-blob'
 import { registerPDFFonts } from '@/lib/pdfFonts'
 import { generatePlaceholderImage } from '@/lib/placeholderImage'
 import { ProductList } from '@/types'
@@ -22,12 +25,12 @@ if (typeof window !== 'undefined') {
   registerPDFFonts()
 }
 
-const loadPdfToImage = async () => {
-  if (typeof window === 'undefined') {
-    throw new Error('pdf-to-image can only be used in browser')
-  }
-  return import('@/lib/pdf-to-blob')
-}
+// const loadPdfToImage = async () => {
+//   if (typeof window === 'undefined') {
+//     throw new Error('pdf-to-image can only be used in browser')
+//   }
+//   return import('@/lib/pdf-to-blob')
+// }
 
 interface PriceListViewProps {
   products: ProductList[]
@@ -46,7 +49,6 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
   const handleDownloadJPG = async (blob: Blob) => {
     setDownloadType('jpg')
     try {
-      const { downloadPDFAsImage } = await loadPdfToImage()
       await downloadPDFAsImage(blob, 'price-list.jpg', {
         scale: 3,
         format: 'image/jpeg',

@@ -2,14 +2,16 @@
   "name": "water_tank",
   "private": true,
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev --turbopack",
     "build": "prisma generate && next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "db:push": "npx prisma db push",
     "db:generate": "prisma generate",
-    "db:seed": "node prisma/seed.js"
+    "db:seed": "node prisma/seed.js",
+    "postinstall": "node scripts/sync-pdfjs-worker.js"
   },
   "dependencies": {
     "@jsquash/jpeg": "^1.6.0",

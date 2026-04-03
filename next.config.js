@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {},
   // Webpack configuration for WASM modules
   webpack: (config, { isServer, webpack }) => {
     // Handle qpdf-wasm and other modules that use Node.js built-ins
@@ -113,6 +114,16 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // HTML pages - short cache with revalidation
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
     ]
   },
   images: {
@@ -144,5 +155,4 @@ const nextConfig = {
     ignoreBuildErrors: true, // Temporarily ignore to allow build during migration
   },
 }
-
-module.exports = nextConfig
+export default nextConfig
