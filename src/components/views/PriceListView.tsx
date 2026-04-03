@@ -12,6 +12,7 @@ import {
   Package,
 } from 'lucide-react'
 import React, { useMemo, useRef, useState } from 'react'
+import { toast } from 'react-toastify'
 import PriceListPDF from '../PricelistPDF'
 import { OptimizedImage } from '../ui/OptimizedImage'
 import { PriceTable } from './PriceTable'
@@ -53,7 +54,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
       })
     } catch (error) {
       console.error('Image export error:', error)
-      alert('Failed to download image')
+      toast.error('Failed to download image')
     } finally {
       setDownloadType(null)
     }

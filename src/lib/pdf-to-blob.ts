@@ -1,18 +1,9 @@
 // lib/pdf-to-image.ts
 import * as pdfjsLib from 'pdfjs-dist'
 
-// ✅ Configure pdf.js worker for Next.js (client-side only)
+// ✅ Configure pdf.js worker from public folder (avoids MIME type issues)
 if (typeof window !== 'undefined') {
-  try {
-    // Primary: Load worker from node_modules via import.meta.url
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.mjs',
-      import.meta.url,
-    ).href
-  } catch (error) {
-    console.warn('Failed to load pdf.js worker from node_modules:', error)
-    // Fallback will be handled in the function below
-  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.mjs'
 }
 
 export interface PDFToImageOptions {
@@ -188,8 +179,6 @@ function ensureWorkerConfigured(): void {
   if (typeof window === 'undefined') return
 
   if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    // Fallback: try public folder
-    const baseUrl = window.location.origin
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `${baseUrl}/pdfjs/pdf.worker.min.mjs`
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.mjs'
   }
 }
