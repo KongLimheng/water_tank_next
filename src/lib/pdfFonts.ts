@@ -62,4 +62,4 @@ export function registerPDFFonts() {
 }
 
 // Auto-register when this module is imported (both client and server)
-registerPDFFonts()
+// registerPDFFonts()

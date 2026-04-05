@@ -17,6 +17,33 @@ const Navbar: React.FC = () => {
   const { isAuthenticated, isLoading, verifyPassword, logout } = useDealer()
   const dealerDropdownRef = useRef<HTMLDivElement>(null)
   const mobileDealerRef = useRef<HTMLDivElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const mobileMenuOpenAtRef = useRef<number | null>(null)
+  const mobileMenuOpenScrollYRef = useRef<number | null>(null)
+
+  // Wrapper for setting mobile menu state that records open time/scroll
+  const setMobileMenuState = (value: React.SetStateAction<boolean>) => {
+    setMobileMenuOpen((prev) => {
+      const newVal =
+        typeof value === 'function'
+          ? (value as (p: boolean) => boolean)(prev)
+          : value
+      if (newVal) {
+        if (typeof window !== 'undefined') {
+          mobileMenuOpenAtRef.current = Date.now()
+          mobileMenuOpenScrollYRef.current = window.scrollY
+        } else {
+          mobileMenuOpenAtRef.current = Date.now()
+          mobileMenuOpenScrollYRef.current = 0
+        }
+      } else {
+        mobileMenuOpenAtRef.current = null
+        mobileMenuOpenScrollYRef.current = null
+      }
+
+      return newVal
+    })
+  }
 
   // Show dealer dropdown only on /products or /shop routes
   const showDealerDropdown =
@@ -46,6 +73,50 @@ const Navbar: React.FC = () => {
     }
   }, [dealerDropdownOpen])
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!mobileMenuOpen) return
+
+      const isOutside = mobileMenuRef.current
+        ? !mobileMenuRef.current.contains(event.target as Node)
+        : true
+
+      if (isOutside) {
+        setMobileMenuState(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [mobileMenuOpen])
+
+  // Close mobile menu when scrolling, but ignore tiny/instant scrolls
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!mobileMenuOpen) return
+
+      const openedAt = mobileMenuOpenAtRef.current
+      const now = Date.now()
+      const timeSinceOpen = openedAt ? now - openedAt : Number.POSITIVE_INFINITY
+      const MIN_TIME = 500 // ms
+
+      // Ignore any scrolls that happen within MIN_TIME after opening the menu.
+      // This handles browser UI/address-bar changes and quick small shifts when
+      // opening the menu while the page is mid-scroll.
+      if (timeSinceOpen < MIN_TIME) return
+
+      setMobileMenuState(false)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [mobileMenuOpen])
+
   const handleDealerSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (dealerPassword.trim()) {
@@ -67,7 +138,7 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 886) {
-        setMobileMenuOpen(false) // Close mobile menu on desktop
+        setMobileMenuState(false) // Close mobile menu on desktop
       }
       // Don't auto-close on mobile resize (keyboard open/close)
     }
@@ -227,7 +298,7 @@ const Navbar: React.FC = () => {
 
           <button
             className="md:hidden p-2 text-slate-600"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuState((prev) => !prev)}
           >
             <MenuIcon className="size-6" />
           </button>
@@ -236,12 +307,15 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white">
+        <div
+          className="md:hidden border-t border-slate-100 bg-white"
+          ref={mobileMenuRef}
+        >
           <div className="px-4 py-4 space-y-2">
             {/* Mobile Search Box */}
             <div className="pb-3 border-b border-slate-100 mb-3">
               <SearchBox
-                setMobileMenu={setMobileMenuOpen}
+                setMobileMenu={setMobileMenuState}
                 closeOnEscape={false}
               />
             </div>
@@ -251,7 +325,7 @@ const Navbar: React.FC = () => {
               className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
                 isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
               }`}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => setMobileMenuState(false)}
             >
               Home
             </Link>
@@ -263,7 +337,7 @@ const Navbar: React.FC = () => {
                   ? 'text-primary-600 '
                   : 'text-slate-600'
               }`}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => setMobileMenuState(false)}
             >
               Product
             </Link>
@@ -273,7 +347,7 @@ const Navbar: React.FC = () => {
               className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
                 pathname === '/about' ? 'text-primary-600 ' : 'text-slate-600'
               }`}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => setMobileMenuState(false)}
             >
               About Us
             </Link>
@@ -359,7 +433,7 @@ const Navbar: React.FC = () => {
             <div className="border-t border-slate-100 my-2"></div>
             <Link
               href="/videos"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => setMobileMenuState(false)}
               className={`w-full text-sm text-left py-2 rounded-lg flex items-center gap-2 ${
                 isActiveExact('/videos')
                   ? 'text-primary-600 '

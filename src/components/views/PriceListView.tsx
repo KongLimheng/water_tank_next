@@ -3,8 +3,8 @@
 import { useDealer } from '@/contexts/DealerContext'
 import { downloadPDFAsImage } from '@/lib/pdf-to-blob'
 import { registerPDFFonts } from '@/lib/pdfFonts'
-import { generatePlaceholderImage } from '@/lib/placeholderImage'
-import { ProductList } from '@/types'
+import { cn } from '@/lib/utils'
+import { Category, ProductList } from '@/types'
 import { usePDF } from '@react-pdf/renderer'
 import {
   ChevronDown,
@@ -14,7 +14,7 @@ import {
   Loader2,
   Package,
 } from 'lucide-react'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import PriceListPDF from '../PricelistPDF'
 import { OptimizedImage } from '../ui/OptimizedImage'
@@ -25,21 +25,16 @@ if (typeof window !== 'undefined') {
   registerPDFFonts()
 }
 
-// const loadPdfToImage = async () => {
-//   if (typeof window === 'undefined') {
-//     throw new Error('pdf-to-image can only be used in browser')
-//   }
-//   return import('@/lib/pdf-to-blob')
-// }
-
 interface PriceListViewProps {
   products: ProductList[]
   onProductClick: (product: ProductList) => void
+  category: Category
 }
 
 export const PriceListView: React.FC<PriceListViewProps> = ({
   products,
   onProductClick,
+  category,
 }) => {
   const contentRef = useRef<HTMLDivElement>(null)
   const [downloadType, setDownloadType] = useState<'pdf' | 'jpg' | null>(null)
@@ -49,8 +44,8 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
   const handleDownloadJPG = async (blob: Blob) => {
     setDownloadType('jpg')
     try {
-      await downloadPDFAsImage(blob, 'price-list.jpg', {
-        scale: 3,
+      await downloadPDFAsImage(blob, 'price-list', {
+        scale: 5,
         format: 'image/jpeg',
         quality: 1,
       })
@@ -59,6 +54,14 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
       toast.error('Failed to download image')
     } finally {
       setDownloadType(null)
+    }
+  }
+
+  const handlePreviewPDF = () => {
+    if (instance.url) {
+      window.open(instance.url, '_blank')
+    } else {
+      toast.error('PDF is still generating...')
     }
   }
   // 1. Grouping Logic - Dynamic grouping based on product types
@@ -128,14 +131,30 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
     return groups
   }, [products])
 
-  const [instance] = usePDF({
+  const [instance, updateInstance] = usePDF({
     document: PriceListPDF({
       products: products,
       groupedData: groupedData,
-      bannerUrl: products[0]?.category.priceBanner || '',
+      bannerUrl: category.priceBanner || '',
       isAuthenticated,
+      category,
     }),
   })
+
+  useEffect(() => {
+    // Regenerate PDF whenever products or groupedData changes
+    if (isAuthenticated) {
+      updateInstance(
+        PriceListPDF({
+          products: products,
+          groupedData: groupedData,
+          bannerUrl: category.priceBanner || '',
+          isAuthenticated,
+          category,
+        }),
+      )
+    }
+  }, [isAuthenticated])
 
   // Helper to render sections only if they have data
   const renderSection = (type: string, isOther = false) => {
@@ -151,7 +170,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
         {/* Mobile Header (Visible only on small screens) */}
         <div className="lg:hidden text-center mb-4">
           <span
-            className={`inline-block px-8 py-2 text-white text-2xl font-black rounded-xl shadow-lg ${
+            className={`inline-block px-8 py-1 text-white text-xl font-black rounded-lg shadow-lg ${
               isOther ? 'bg-slate-500 hidden' : 'bg-red-600'
             }`}
           >
@@ -169,6 +188,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
               subtitle=""
               onRowClick={onProductClick}
               isHorizontal={false}
+              category={category}
             />
           </div>
 
@@ -180,7 +200,14 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
                 <span className="font-bold text-slate-400">OTHER</span>
               </div>
             ) : (
-              <span className="text-[90px] font-black text-red-600 leading-none drop-shadow-lg transform scale-y-110">
+              <span
+                className={cn(
+                  'text-[90px] font-black leading-none drop-shadow-lg transform scale-y-110',
+                  category?.brand?.name.toLowerCase() === 'crown'
+                    ? 'text-crown-100'
+                    : 'text-red-600',
+                )}
+              >
                 {type}
               </span>
             )}
@@ -194,6 +221,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
               subtitle=""
               onRowClick={onProductClick}
               isHorizontal={true}
+              category={category}
             />
           </div>
         </div>
@@ -209,6 +237,21 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
       {/* Download Button with Dropdown */}
       {isAuthenticated && (
         <div className="flex justify-end gap-2 mb-4 relative">
+          {/* Preview PDF Button */}
+          {/* <button
+            onClick={handlePreviewPDF}
+            disabled={instance.loading || !instance.url}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Preview PDF"
+          >
+            {instance.loading ? (
+              <Loader2 className="animate-spin" size={18} />
+            ) : (
+              <Eye size={18} />
+            )}
+            <span>Preview PDF</span>
+          </button> */}
+
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -296,10 +339,7 @@ export const PriceListView: React.FC<PriceListViewProps> = ({
       {/* Page Header */}
       <div className="flex justify-center pb-8 relative">
         <OptimizedImage
-          src={
-            products[0]?.category.priceBanner ||
-            generatePlaceholderImage(products[0]?.category.name || 'Water Tank')
-          }
+          src={category.priceBanner!}
           alt="Product"
           className="w-full object-contain rounded"
           width={1920}

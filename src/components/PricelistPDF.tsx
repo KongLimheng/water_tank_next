@@ -1,5 +1,5 @@
 // components/ProductPricePDF.tsx
-import { ProductList } from '@/types'
+import { Category, ProductList } from '@/types'
 import {
   Document,
   Image,
@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from '@react-pdf/renderer'
-import React from 'react'
+import React, { useMemo } from 'react'
 
 interface GroupedData {
   vertical: ProductList[]
@@ -22,6 +22,7 @@ interface ProductPricePDFProps {
   }
   bannerUrl?: string
   isAuthenticated: boolean
+  category?: Category
 }
 
 const styles = StyleSheet.create({
@@ -36,12 +37,12 @@ const styles = StyleSheet.create({
     objectFit: 'contain' as const,
   },
   section: {
-    marginBottom: 20,
     borderWidth: 0.3,
     borderColor: '#94a3b8',
     borderStyle: 'solid',
     overflow: 'hidden',
     width: '100%',
+    flex: 1,
   },
   sectionHeader: {
     backgroundColor: '#f8fafc',
@@ -145,13 +146,12 @@ const styles = StyleSheet.create({
     color: '#1e3a8a',
   },
   sectionLabel: {
-    fontSize: 18,
+    fontSize: 50,
     fontWeight: 'bold' as const,
     color: '#dc2626',
     textAlign: 'center' as const,
     alignSelf: 'center' as const,
-    paddingLeft: 0,
-    paddingRight: 10,
+    padding: 10,
   },
   noProducts: {
     padding: 40,
@@ -185,7 +185,14 @@ export default function PriceListPDF({
   groupedData,
   bannerUrl,
   isAuthenticated,
+  category,
 }: ProductPricePDFProps) {
+  const isCrown = useMemo(() => {
+    if (!category) return false
+    return category?.brand?.name.toLowerCase() === 'crown'
+  }, [category])
+
+  const txtColor = isCrown ? '#2c2b8f' : '#dc2626'
   // Calculate max variants for grid layout
   const getMaxVariants = (items: ProductList[]) => {
     if (items.length === 0) return 1
@@ -252,14 +259,20 @@ export default function PriceListPDF({
 
       // Capacity
       rowCells.push(
-        <Text key="capacity" style={styles.capacityCell}>
+        <Text
+          key="capacity"
+          style={{ ...styles.capacityCell, color: txtColor }}
+        >
           {product.volume || product.name}
         </Text>,
       )
 
       // Diameter
       rowCells.push(
-        <Text key="diameter" style={styles.dimensionCell}>
+        <Text
+          key="diameter"
+          style={{ ...styles.dimensionCell, color: txtColor }}
+        >
           {product.diameter || '-'}
         </Text>,
       )
@@ -267,7 +280,10 @@ export default function PriceListPDF({
       // Length (horizontal only)
       if (isHorizontal) {
         rowCells.push(
-          <Text key="length" style={styles.dimensionCell}>
+          <Text
+            key="length"
+            style={{ ...styles.dimensionCell, color: txtColor }}
+          >
             {product.length || '-'}
           </Text>,
         )
@@ -275,7 +291,7 @@ export default function PriceListPDF({
 
       // Height
       rowCells.push(
-        <Text key="height" style={styles.dimensionCell}>
+        <Text key="height" style={{ ...styles.dimensionCell, color: txtColor }}>
           {product.height || '-'}
         </Text>,
       )
@@ -289,7 +305,11 @@ export default function PriceListPDF({
           rowCells.push(
             <Text
               key={`price-${variantIdx}`}
-              style={isLast ? styles.priceCellLast : styles.priceCell}
+              style={
+                isLast
+                  ? { ...styles.priceCellLast, color: txtColor }
+                  : { ...styles.priceCell, color: txtColor }
+              }
             >
               ${variant.price}
             </Text>,
@@ -298,7 +318,11 @@ export default function PriceListPDF({
           rowCells.push(
             <Text
               key={`empty-${variantIdx}`}
-              style={isLast ? styles.priceCellLast : styles.priceCell}
+              style={
+                isLast
+                  ? { ...styles.priceCellLast, color: txtColor }
+                  : { ...styles.priceCell, color: txtColor }
+              }
             >
               $0
             </Text>,
@@ -307,7 +331,11 @@ export default function PriceListPDF({
           rowCells.push(
             <Text
               key={`login-${variantIdx}`}
-              style={isLast ? styles.priceCellLast : styles.priceCell}
+              style={
+                isLast
+                  ? { ...styles.priceCellLast, color: txtColor }
+                  : { ...styles.priceCell, color: txtColor }
+              }
             >
               សាកសួរ
             </Text>,
@@ -334,13 +362,17 @@ export default function PriceListPDF({
     items: ProductList[],
     title: string,
     isHorizontal: boolean,
+    isOther = false,
   ) => {
     if (items.length === 0) return null
 
     const maxVariants = getMaxVariants(items)
 
     return (
-      <View style={styles.section}>
+      <View
+        style={{ ...styles.section, flex: !isOther ? 1 : undefined }}
+        wrap={false}
+      >
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{title}</Text>
         </View>
@@ -364,6 +396,28 @@ export default function PriceListPDF({
     const hasData = group.vertical.length > 0 || group.horizontal.length > 0
     if (!hasData) return null
 
+    if (isOther) {
+      return (
+        <>
+          {/* Vertical Table */}
+          {renderPriceTable(
+            group.vertical,
+            'ធុងឈរ (Vertical Tanks)',
+            false,
+            isOther,
+          )}
+
+          {/* Horizontal Table */}
+          {renderPriceTable(
+            group.horizontal,
+            'ធុងទឹកផ្តេក (Horizontal Tanks)',
+            true,
+            isOther,
+          )}
+        </>
+      )
+    }
+    // For other types (A, B, C, etc.), render side by side
     return (
       <View
         key={type}
@@ -371,7 +425,6 @@ export default function PriceListPDF({
           display: 'flex',
           flexDirection: 'row',
           width: '100%',
-          gap: 5,
           justifyContent: 'center',
         }}
       >
@@ -379,7 +432,11 @@ export default function PriceListPDF({
         {renderPriceTable(group.vertical, 'ធុងឈរ (Vertical Tanks)', false)}
 
         {/* Section Label */}
-        {!isOther && <Text style={styles.sectionLabel}>{type}</Text>}
+        {!isOther && (
+          <Text style={{ ...styles.sectionLabel, color: txtColor }}>
+            {type}
+          </Text>
+        )}
 
         {/* Horizontal Table */}
         {renderPriceTable(

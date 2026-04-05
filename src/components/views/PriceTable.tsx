@@ -1,7 +1,7 @@
 'use client'
 
 import { useDealer } from '@/contexts/DealerContext'
-import { ProductList } from '@/types'
+import { Category, ProductList } from '@/types'
 import { useMemo } from 'react'
 
 export const PriceTable = ({
@@ -16,6 +16,7 @@ export const PriceTable = ({
   subtitle: string
   onRowClick: (p: ProductList) => void
   isHorizontal: boolean
+  category?: Category
 }) => {
   const { isAuthenticated } = useDealer()
 
@@ -49,7 +50,7 @@ export const PriceTable = ({
   }
 
   return (
-    <div className="border border-slate-400 h-full flex flex-col relative">
+    <div className="border border-slate-400/80 h-full flex flex-col relative">
       <div className="text-center font-bold text-blue-900 bg-slate-50 py-2 border-b-2 border-slate-400">
         {title}
       </div>
@@ -100,78 +101,91 @@ export const PriceTable = ({
 
       {/* Table Body */}
       <div className="bg-white divide-y flex-1">
-        {items.map((product, idx) => (
-          <div
-            key={product.id}
-            onClick={() => onRowClick(product)}
-            className="text-center items-center py-2 cursor-pointer transition-colors group hover:bg-blue-50 hover:border-blue-600 hover:border"
-            style={{
-              ...gridStyle,
-              backgroundColor: idx % 2 === 0 ? 'white' : '#f1f5f9',
-            }}
-          >
-            {/* 1. Capacity */}
-            <div className="text-red-600 font-black text-sm lg:text-base border-r border-transparent px-1 break-words">
-              {product.volume || product.name}
-            </div>
+        {items.map((product, idx) => {
+          const isCrown = product.category.brand?.name.toLowerCase() === 'crown'
+          const textColor = isCrown ? 'text-crown-100' : 'text-red-600'
 
-            {/* 2. Diameter */}
-            <div className="text-red-600 font-bold text-sm lg:text-base border-r border-transparent px-1">
-              {product.diameter || '-'}
-            </div>
-
-            {/* 3. Length (Horizontal only) */}
-            {isHorizontal && (
-              <div className="text-red-600 font-bold text-sm lg:text-base border-r border-transparent px-1">
-                {product.length}
+          return (
+            <div
+              key={product.id}
+              onClick={() => onRowClick(product)}
+              className="text-center items-center py-2 cursor-pointer transition-colors group hover:bg-blue-50 hover:border-blue-600 hover:border"
+              style={{
+                ...gridStyle,
+                backgroundColor: idx % 2 === 0 ? 'white' : '#f1f5f9',
+              }}
+            >
+              {/* 1. Capacity */}
+              <div
+                className={`${textColor} font-black text-sm lg:text-base border-r border-transparent px-1 break-words`}
+              >
+                {product.volume || product.name}
               </div>
-            )}
 
-            {/* 4. Height */}
-            <div className="text-red-600 font-bold text-sm lg:text-base border-r border-transparent px-1">
-              {product.height || '-'}
-            </div>
+              {/* 2. Diameter */}
+              <div
+                className={`${textColor} font-bold text-sm lg:text-base border-r border-transparent px-1`}
+              >
+                {product.diameter || '-'}
+              </div>
 
-            {/* Price columns - one for each variant slot */}
-            {Array.from({ length: maxVariants }).map((_, variantIdx) => {
-              const variant = product.variants[variantIdx]
-
-              if (!variant && isAuthenticated) {
-                // Empty slot if product has fewer variants than max
-                return (
-                  <div
-                    key={`empty-price-${variantIdx}`}
-                    className="text-red-600 font-black text-sm px-1"
-                  >
-                    $0
-                  </div>
-                )
-              }
-
-              // Show price for variant only if authenticated as dealer
-              if (isAuthenticated && variant) {
-                return (
-                  <div
-                    key={variant.id}
-                    className="text-red-600 font-bold text-sm lg:text-base border-r border-transparent px-1"
-                  >
-                    ${variant.price}
-                  </div>
-                )
-              }
-
-              // Show "Login to view price" or "សាកសួរ" when not authenticated
-              return (
+              {/* 3. Length (Horizontal only) */}
+              {isHorizontal && (
                 <div
-                  key={variantIdx}
-                  className="text-red-600 font-bold text-sm px-1"
+                  className={`${textColor} font-bold text-sm lg:text-base border-r border-transparent px-1`}
                 >
-                  សាកសួរ
+                  {product.length}
                 </div>
-              )
-            })}
-          </div>
-        ))}
+              )}
+
+              {/* 4. Height */}
+              <div
+                className={`${textColor} font-bold text-sm lg:text-base border-r border-transparent px-1`}
+              >
+                {product.height || '-'}
+              </div>
+
+              {/* Price columns - one for each variant slot */}
+              {Array.from({ length: maxVariants }).map((_, variantIdx) => {
+                const variant = product.variants[variantIdx]
+
+                if (!variant && isAuthenticated) {
+                  // Empty slot if product has fewer variants than max
+                  return (
+                    <div
+                      key={`empty-price-${variantIdx}`}
+                      className={`${textColor} font-black text-sm px-1`}
+                    >
+                      $0
+                    </div>
+                  )
+                }
+
+                // Show price for variant only if authenticated as dealer
+                if (isAuthenticated && variant) {
+                  return (
+                    <div
+                      key={variant.id}
+                      className={`${textColor} font-bold text-sm lg:text-base border-r border-transparent px-1`}
+                    >
+                      ${variant.price}
+                    </div>
+                  )
+                }
+
+                // Show "Login to view price" or "សាកសួរ" when not authenticated
+                return (
+                  <div
+                    key={variantIdx}
+                    className={`${textColor} font-bold text-sm px-1`}
+                  >
+                    សាកសួរ
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -163,5 +163,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Temporarily ignore to allow build during migration
   },
+  allowedDevOrigins: [
+    process.env.NODE_ENV === 'production' ? '' : '192.168.100.84',
+  ],
 }
 export default nextConfig

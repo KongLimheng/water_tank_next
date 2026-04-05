@@ -36,7 +36,7 @@ const ShopProducts = () => {
 
   return (
     <>
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-full mx-auto p-6 md:p-8">
         <div className="flex items-center justify-between gap-2 mb-2">
           <h2 className="text-3xl font-bold text-slate-900">
             {/* {`All ${
@@ -58,6 +58,7 @@ const ShopProducts = () => {
           <PriceListView
             products={visibleProducts}
             onProductClick={setSelectedProduct}
+            category={catById}
           />
         ) : null}
       </div>
