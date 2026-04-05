@@ -7,7 +7,7 @@ import { getProductsByBrandCategory } from '@/services/productService'
 import { ProductList } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 const ShopProducts = () => {
@@ -30,6 +30,10 @@ const ShopProducts = () => {
     queryKey: ['category', activeCategory],
     queryFn: () => getCategoryById(parseInt(activeCategory)),
   })
+
+  if (!activeCategory) {
+    redirect('/products') // Redirect to categories page if no category is selected
+  }
 
   const visibleProducts = fetchedProducts || []
   const isGridLoading = isQueryLoading
