@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from '@react-pdf/renderer'
-import React, { useMemo } from 'react'
+import React from 'react'
 
 interface GroupedData {
   vertical: ProductList[]
@@ -187,11 +187,7 @@ export default function PriceListPDF({
   isAuthenticated,
   category,
 }: ProductPricePDFProps) {
-  const isCrown = useMemo(() => {
-    if (!category) return false
-    return category?.brand?.name.toLowerCase() === 'crown'
-  }, [category])
-
+  const isCrown = category?.brand?.name.toLowerCase() === 'crown'
   const txtColor = isCrown ? '#2c2b8f' : '#dc2626'
   // Calculate max variants for grid layout
   const getMaxVariants = (items: ProductList[]) => {
