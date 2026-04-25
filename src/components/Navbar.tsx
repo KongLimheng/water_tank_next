@@ -1,7 +1,9 @@
 'use client'
 
 import { useDealer } from '@/contexts/DealerContext'
-import { Check, ChevronDown, Lock, MenuIcon, UserCheck } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Check, ChevronDown, Lock, MenuIcon, UserCheck, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -229,148 +231,153 @@ const Navbar: React.FC = () => {
             className="md:hidden p-2 text-slate-600"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <MenuIcon className="size-6" />
+            {mobileMenuOpen ? (
+              <X className="size-6" />
+            ) : (
+              <MenuIcon className="size-6" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white">
-          <div className="px-4 py-4 space-y-2">
-            {/* Mobile Search Box */}
-            <div className="pb-3 border-b border-slate-100 mb-3">
-              <SearchBox
-                setMobileMenu={setMobileMenuOpen}
-                closeOnEscape={false}
-              />
-            </div>
-
-            <Link
-              href="/"
-              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
-                isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/products"
-              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
-                isActiveExact('/products')
-                  ? 'text-primary-600 '
-                  : 'text-slate-600'
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Product
-            </Link>
-
-            <Link
-              href="/about"
-              className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
-                pathname === '/about' ? 'text-primary-600 ' : 'text-slate-600'
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About Us
-            </Link>
-
-            {/* Mobile Dealer Section */}
-            {showDealerDropdown && (
-              <div
-                className="border-t border-slate-100 my-2 pt-2"
-                ref={mobileDealerRef}
-              >
-                {isAuthenticated ? (
-                  <div className="flex items-center justify-between px-3 py-2 bg-green-50 rounded-lg mb-2">
-                    <div className="flex items-center gap-2 text-green-700">
-                      <UserCheck size={18} />
-                      <span className="text-sm font-bold">Dealer</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        logout()
-                        setDealerDropdownOpen(false)
-                      }}
-                      className="text-xs text-red-600 font-medium hover:text-red-700"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setDealerDropdownOpen(!dealerDropdownOpen)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-amber-50 text-amber-700 rounded-lg"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Lock size={18} />
-                        <span className="text-sm font-bold">Dealer Login</span>
-                      </div>
-                      <ChevronDown
-                        size={16}
-                        className={`transition-transform ${
-                          dealerDropdownOpen ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
-
-                    {dealerDropdownOpen && (
-                      <form
-                        onSubmit={handleDealerSubmit}
-                        className="px-3 pb-3 space-y-2"
-                      >
-                        <div className="relative">
-                          <Lock
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                            size={14}
-                          />
-                          <input
-                            type="password"
-                            value={dealerPassword}
-                            onChange={(e) => setDealerPassword(e.target.value)}
-                            placeholder="Enter password"
-                            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-                            disabled={isLoading}
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={isLoading || !dealerPassword.trim()}
-                          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
-                        >
-                          {isLoading ? (
-                            <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
-                          ) : (
-                            <Check size={14} />
-                          )}
-                          OK
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                )}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+            className="md:hidden border-t border-slate-100 bg-white overflow-hidden"
+          >
+            <div className="px-4 py-4 space-y-2">
+              {/* Mobile Search Box */}
+              <div className="pb-3 border-b border-slate-100 mb-3">
+                <SearchBox
+                  setMobileMenu={setMobileMenuOpen}
+                  closeOnEscape={false}
+                />
               </div>
-            )}
 
-            <div className="border-t border-slate-100 my-2"></div>
-            <Link
-              href="/videos"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`w-full text-sm text-left py-2 rounded-lg flex items-center gap-2 ${
-                isActiveExact('/videos')
-                  ? 'text-primary-600 '
-                  : 'text-slate-600'
-              }`}
-            >
-              Video Guides
-            </Link>
-          </div>
-        </div>
-      )}
+              <Link
+                href="/"
+                className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
+                  isActiveExact('/') ? 'text-primary-600 ' : 'text-slate-600'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+
+              <Link
+                href="/products"
+                className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
+                  isActiveExact('/products')
+                    ? 'text-primary-600 '
+                    : 'text-slate-600'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Product
+              </Link>
+
+              <Link
+                href="/about"
+                className={`block text-sm font-medium transition-colors hover:text-primary-600 ${
+                  pathname === '/about' ? 'text-primary-600 ' : 'text-slate-600'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About Us
+              </Link>
+
+              {/* Mobile Dealer Section */}
+              {showDealerDropdown && (
+                <div
+                  className={cn(
+                    ' border-slate-100 my-2 pt-2',
+                    !isAuthenticated ? 'border-t' : 'hidden',
+                  )}
+                  ref={mobileDealerRef}
+                >
+                  {!isAuthenticated && (
+                    <div className="space-y-2">
+                      <button
+                        onClick={() =>
+                          setDealerDropdownOpen(!dealerDropdownOpen)
+                        }
+                        className="w-full flex items-center justify-between px-3 py-2 bg-amber-50 text-amber-700 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Lock size={18} />
+                          <span className="text-sm font-bold">
+                            Dealer Login
+                          </span>
+                        </div>
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform ${
+                            dealerDropdownOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+
+                      {dealerDropdownOpen && (
+                        <form
+                          onSubmit={handleDealerSubmit}
+                          className="px-3 pb-3 space-y-2"
+                        >
+                          <div className="relative">
+                            <Lock
+                              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                              size={14}
+                            />
+                            <input
+                              type="password"
+                              value={dealerPassword}
+                              onChange={(e) =>
+                                setDealerPassword(e.target.value)
+                              }
+                              placeholder="Enter password"
+                              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                              disabled={isLoading}
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={isLoading || !dealerPassword.trim()}
+                            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                          >
+                            {isLoading ? (
+                              <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                            ) : (
+                              <Check size={14} />
+                            )}
+                            OK
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="border-t border-slate-100 my-2"></div>
+              <Link
+                href="/videos"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`w-full text-sm text-left py-2 rounded-lg flex items-center gap-2 ${
+                  isActiveExact('/videos')
+                    ? 'text-primary-600 '
+                    : 'text-slate-600'
+                }`}
+              >
+                Video Guides
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   )
 }
